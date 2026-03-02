@@ -80,7 +80,8 @@ const BroBlockScorer = (() => {
   /**
    * Zero out points for categories the user is interested in.
    * Keeps all categories in the breakdown (so UI can show them with hearts).
-   * Recalculates compound bonus on the adjusted totals.
+   * Recalculates compound bonus on the adjusted totals and re-applies
+   * dampener + profile signal adjustments from the engine.
    */
   function applyInterests(result, interestedSet) {
     if (!interestedSet || interestedSet.size === 0) return result;
@@ -98,22 +99,29 @@ const BroBlockScorer = (() => {
       return b;
     });
 
-    // Compound bonus only counts non-interested categories
+    // Breadth bonus only counts non-interested categories
     const activeCount = adjusted.filter((b) => !b.interested).length;
     if (activeCount >= 2) {
-      const multiplier = activeCount >= 5 ? 1.55 : activeCount === 4 ? 1.40 : activeCount === 3 ? 1.25 : 1.10;
-      total = Math.round(total * multiplier);
+      total += Math.round(7 * Math.log(activeCount));
     }
 
+    // Re-apply dampener + profile signal adjustments (only if score is still positive)
+    if (total > 0 && result.adjustments) {
+      total += result.adjustments;
+    }
+
+    // Only include reasons from non-interested categories
     const reasons = adjusted
+      .filter((b) => !b.interested)
       .flatMap((b) => b.reasons.map((r) => b.category + ": " + r))
       .slice(0, 5);
 
     return {
-      score: Math.min(Math.max(total, 0), 120),
+      score: Math.min(Math.max(total, 0), BB.SCORE_MAX),
       categories: adjusted.map((b) => b.category),
       reasons,
       breakdown: adjusted,
+      adjustments: result.adjustments,
     };
   }
 

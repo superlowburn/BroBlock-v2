@@ -1,6 +1,6 @@
 /**
  * BroBlock V2 — Detection Engine
- * Pre-compiles regex patterns at load time. Scores text 0-100.
+ * Pre-compiles regex patterns at load time. Scores text 0-120.
  * Returns score, matched categories, human-readable reasons, and full breakdown.
  * Depends on: BroCategories (from categories.js)
  */
@@ -17,6 +17,12 @@ const BroDetector = (() => {
       reason: p.reason,
     })),
   }));
+
+  // Scoring constants
+  const CAT_CAP = 35;                // Per-category soft ceiling (tanh asymptote)
+  const BREADTH_BASE = 7;            // Additive breadth bonus: BREADTH_BASE * ln(n)
+  const LONG_TEXT_THRESHOLD = 400;   // Chars above which length deflation kicks in
+  const LONG_TEXT_FLOOR = 0.85;      // Max deflation for very long texts (15% reduction)
 
   // Pre-compiled dampener patterns — analytical/critical language
   // indicates the person is discussing/critiquing rather than promoting
@@ -44,7 +50,7 @@ const BroDetector = (() => {
    * Score a tweet's text content.
    * @param {string} text - Tweet text
    * @param {{ hasBlueCheck?: boolean, displayName?: string }} [signals]
-   * @returns {{ score: number, categories: string[], reasons: string[], breakdown: Array<{category: string, points: number, reasons: string[]}> }}
+   * @returns {{ score: number, categories: string[], reasons: string[], breakdown: Array<{category: string, points: number, rawPoints: number, reasons: string[]}>, adjustments: number }}
    */
   function score(text, signals) {
     if (!text || typeof text !== "string") {
@@ -54,6 +60,7 @@ const BroDetector = (() => {
     let total = 0;
     const breakdown = [];
 
+    // 1. Per-category scoring with tanh soft cap
     for (const cat of compiled) {
       let catPoints = 0;
       const catReasons = [];
@@ -71,40 +78,52 @@ const BroDetector = (() => {
       }
 
       if (catPoints > 0) {
+        // Soft cap: tanh saturates toward CAT_CAP, preserves low-end linearity
+        const effectivePoints = Math.round(CAT_CAP * Math.tanh(catPoints / CAT_CAP));
         breakdown.push({
           id: cat.id,
           category: cat.label,
-          points: catPoints,
+          points: effectivePoints,
+          rawPoints: catPoints,
           reasons: catReasons,
         });
-        total += catPoints;
+        total += effectivePoints;
       }
     }
 
-    // Compound bonus: 2+ categories = multiplicative scaling
-    if (breakdown.length >= 2) {
-      const n = breakdown.length;
-      const multiplier = n >= 5 ? 1.55 : n === 4 ? 1.40 : n === 3 ? 1.25 : 1.10;
-      total = Math.round(total * multiplier);
+    // 2. Text-length deflation: long texts don't inflate score from sheer volume
+    if (text.length > LONG_TEXT_THRESHOLD) {
+      const deflation = LONG_TEXT_FLOOR + (1 - LONG_TEXT_FLOOR) * (LONG_TEXT_THRESHOLD / text.length);
+      total = Math.round(total * deflation);
     }
 
-    // Dampener: analytical/critical language reduces score
-    // Caps at -20 so genuinely bro content (50+) still gets caught
+    // 3. Breadth bonus: reward category diversity with additive points
+    if (breakdown.length >= 2) {
+      total += Math.round(BREADTH_BASE * Math.log(breakdown.length));
+    }
+
+    // 4. Dampener: analytical/critical language reduces score
+    // Proportional cap: at least -8, at most 25% of current total
+    let dampenerAdj = 0;
     if (total > 0) {
       let dampener = 0;
       for (const { test, weight } of DAMPENER_PATTERNS) {
         if (test.test(text)) dampener += weight;
         test.lastIndex = 0;
       }
-      total += Math.max(dampener, -15);
+      const dampenerCap = -Math.max(8, Math.round(total * 0.25));
+      dampenerAdj = Math.max(dampener, dampenerCap);
+      total += dampenerAdj;
     }
 
-    // Profile signals (only amplify existing text signal)
+    // 5. Profile signals (only amplify existing text signal)
+    let signalAdj = 0;
     if (total > 0 && signals) {
-      if (signals.hasBlueCheck) total += 5;
+      if (signals.hasBlueCheck) signalAdj += 5;
       if (signals.displayName) {
-        total += scoreName(signals.displayName);
+        signalAdj += scoreName(signals.displayName);
       }
+      total += signalAdj;
     }
 
     // Sort by highest-scoring category first
@@ -116,10 +135,11 @@ const BroDetector = (() => {
       .slice(0, 5);
 
     return {
-      score: Math.min(Math.max(total, 0), 120),
+      score: Math.min(Math.max(total, 0), BB.SCORE_MAX),
       categories: breakdown.map((b) => b.category),
       reasons,
       breakdown,
+      adjustments: dampenerAdj + signalAdj,
     };
   }
 

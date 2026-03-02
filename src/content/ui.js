@@ -220,8 +220,13 @@ const BroBlockUI = (() => {
         anchor.parentElement.appendChild(pill);
       }
     } else {
-      // Timestamp not in DOM yet — unmark so next mutation retries
-      article.removeAttribute("data-bb-scored");
+      // Timestamp not in DOM yet — unmark so next mutation retries,
+      // but cap retries to avoid infinite loop on unusual layouts
+      const retries = parseInt(article.getAttribute("data-bb-pill-retries") || "0", 10);
+      if (retries < 3) {
+        article.setAttribute("data-bb-pill-retries", String(retries + 1));
+        article.removeAttribute("data-bb-scored");
+      }
     }
   }
 
@@ -513,15 +518,20 @@ const BroBlockUI = (() => {
   function doBlacklist(handle, article) {
     const normalized = handle.toLowerCase();
 
-    // Update in-memory state
+    // Update in-memory state (including threshold so rescan uses fresh value)
     state.knownBros.add(normalized);
     state.trustedUsers.delete(normalized);
+    state.threshold = Math.max(BB.LIMITS.THRESHOLD_MIN, state.threshold - BB.LIMITS.THRESHOLD_BRO_STEP);
 
     // Persist to storage (single atomic read+write for lists + threshold)
     chrome.storage.sync.get({ knownBros: [], trustedUsers: [], threshold: BB.LIMITS.THRESHOLD_DEFAULT }, (data) => {
       const trusted = data.trustedUsers.filter((h) => h.toLowerCase() !== normalized);
-      const bros = data.knownBros.filter((h) => h.toLowerCase() !== normalized);
+      let bros = data.knownBros.filter((h) => h.toLowerCase() !== normalized);
       bros.push(normalized);
+      // Enforce list size limit — keep most recent entries
+      if (bros.length > BB.LIMITS.MAX_LIST_SIZE) {
+        bros = bros.slice(bros.length - BB.LIMITS.MAX_LIST_SIZE);
+      }
       const t = Math.max(BB.LIMITS.THRESHOLD_MIN, data.threshold - BB.LIMITS.THRESHOLD_BRO_STEP);
       chrome.storage.sync.set({ knownBros: bros, trustedUsers: trusted, threshold: t });
     });
@@ -554,15 +564,20 @@ const BroBlockUI = (() => {
   function doWhitelist(handle, s) {
     const normalized = handle.toLowerCase();
 
-    // Update in-memory state
+    // Update in-memory state (including threshold so rescan uses fresh value)
     s.trustedUsers.add(normalized);
     s.knownBros.delete(normalized);
+    s.threshold = Math.min(BB.LIMITS.THRESHOLD_MAX, s.threshold + BB.LIMITS.THRESHOLD_TRUST_STEP);
 
     // Persist to storage (single atomic read+write for lists + threshold)
     chrome.storage.sync.get({ knownBros: [], trustedUsers: [], threshold: BB.LIMITS.THRESHOLD_DEFAULT }, (data) => {
       const bros = data.knownBros.filter((h) => h.toLowerCase() !== normalized);
-      const trusted = data.trustedUsers.filter((h) => h.toLowerCase() !== normalized);
+      let trusted = data.trustedUsers.filter((h) => h.toLowerCase() !== normalized);
       trusted.push(normalized);
+      // Enforce list size limit — keep most recent entries
+      if (trusted.length > BB.LIMITS.MAX_LIST_SIZE) {
+        trusted = trusted.slice(trusted.length - BB.LIMITS.MAX_LIST_SIZE);
+      }
       const t = Math.min(BB.LIMITS.THRESHOLD_MAX, data.threshold + BB.LIMITS.THRESHOLD_TRUST_STEP);
       chrome.storage.sync.set({ knownBros: bros, trustedUsers: trusted, threshold: t });
     });
@@ -600,17 +615,8 @@ const BroBlockUI = (() => {
       state.interestedCategories.add(categoryId);
     }
 
-    // Persist
-    chrome.storage.sync.get({ interestedCategories: [] }, (data) => {
-      const list = data.interestedCategories || [];
-      const idx = list.indexOf(categoryId);
-      if (idx >= 0) {
-        list.splice(idx, 1);
-      } else {
-        list.push(categoryId);
-      }
-      chrome.storage.sync.set({ interestedCategories: list });
-    });
+    // Persist in-memory state directly (avoids read-then-toggle race)
+    chrome.storage.sync.set({ interestedCategories: [...state.interestedCategories] });
   }
 
   /**

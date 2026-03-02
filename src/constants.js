@@ -21,7 +21,7 @@ const BB = (() => {
     sync: {
       _schemaVersion: SCHEMA_VERSION,
       enabled: true,
-      threshold: 40,
+      threshold: 35,
       knownBros: [],
       trustedUsers: [],
       interestedCategories: [],
@@ -36,7 +36,7 @@ const BB = (() => {
     MAX_LIST_SIZE: 500,
     THRESHOLD_MIN: 15,
     THRESHOLD_MAX: 85,
-    THRESHOLD_DEFAULT: 40,
+    THRESHOLD_DEFAULT: 35,
     THRESHOLD_TRUST_STEP: 1,
     THRESHOLD_BRO_STEP: 2,
   };
@@ -51,10 +51,12 @@ const BB = (() => {
     KNOWN_BRO: "knownBro",
   };
 
+  const SCORE_MAX = 120;
+
   /**
-   * Severity based on raw score relative to user's threshold.
+   * Severity based on raw score (0-120) relative to user's threshold.
    * Above threshold: splits remaining range into 3 equal bands.
-   * At default threshold (40), bands are identical to the old fixed system.
+   * At default threshold (35), bands split the above-threshold range into thirds.
    */
   function getSeverity(score, state, threshold) {
     if (state === "trusted") return SEVERITY.TRUSTED;
@@ -62,7 +64,7 @@ const BB = (() => {
     if (score === 0) return SEVERITY.NONE;
     const t = threshold || LIMITS.THRESHOLD_DEFAULT;
     if (score < t) return SEVERITY.LOW;
-    const pct = (score - t) / Math.max(1, 100 - t);
+    const pct = (score - t) / Math.max(1, SCORE_MAX - t);
     if (pct < 0.33) return SEVERITY.MODERATE;
     if (pct < 0.66) return SEVERITY.HIGH;
     return SEVERITY.EXTREME;
@@ -80,5 +82,5 @@ const BB = (() => {
     return { label: "Chill", hint: "\u201CDM me FREE for my guide. Only 5 spots left! \uD83D\uDE80\u201D", color: "#2e8b47" };
   }
 
-  return { SCHEMA_VERSION, KEYS, DEFAULTS, LIMITS, SEVERITY, getSeverity, getSensitivityLevel };
+  return { SCHEMA_VERSION, KEYS, DEFAULTS, LIMITS, SCORE_MAX, SEVERITY, getSeverity, getSensitivityLevel };
 })();

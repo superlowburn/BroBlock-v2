@@ -19,6 +19,7 @@ const BroBlockCleanup = (() => {
     article.classList.remove("bb-frosted");
     article.removeAttribute("data-bb-scored");
     article.removeAttribute("data-bb-peeked");
+    article.removeAttribute("data-bb-pill-retries");
     article.style.removeProperty("pointer-events");
     article.style.removeProperty("user-select");
   }
