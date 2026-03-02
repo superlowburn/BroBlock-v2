@@ -31,9 +31,23 @@ const BroBlockObserver = (() => {
           // When Twitter hydrates text inside an existing article,
           // the addedNode is a child — walk up to find the parent article
           const parentArticle = node.closest?.("article");
-          if (parentArticle && !parentArticle.hasAttribute("data-bb-scored") && !seenArticles.has(parentArticle)) {
-            seenArticles.add(parentArticle);
-            pendingNodes.push(parentArticle);
+          if (!parentArticle) continue;
+          if (!parentArticle.hasAttribute("data-bb-scored")) {
+            if (!seenArticles.has(parentArticle)) {
+              seenArticles.add(parentArticle);
+              pendingNodes.push(parentArticle);
+            }
+          } else {
+            // Lazy-load fix: Twitter injected tweetText into an already-scored
+            // article (e.g. quoted tweet loaded after outer article was scored).
+            // Clear the scored flag so the article re-evaluates with full content.
+            const isTweetText = node.matches?.('[data-testid="tweetText"]') ||
+              !!node.querySelector?.('[data-testid="tweetText"]');
+            if (isTweetText && !seenArticles.has(parentArticle)) {
+              seenArticles.add(parentArticle);
+              parentArticle.removeAttribute("data-bb-scored");
+              pendingNodes.push(parentArticle);
+            }
           }
         }
       }

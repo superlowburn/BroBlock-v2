@@ -12,33 +12,52 @@ const BroBlockExtractor = (() => {
    * Returns empty string if no text found (article will be retried on next mutation).
    */
   function extractText(article) {
+    let base = "";
+
     // Strategy 1: Twitter's data-testid (fast, current as of 2025)
-    const byTestId = article.querySelector('[data-testid="tweetText"]');
-    if (byTestId) {
-      const text = (byTestId.innerText || byTestId.textContent || "").trim();
-      if (text) return text;
+    // querySelectorAll captures both main tweet and any quoted tweet text
+    const byTestId = article.querySelectorAll('[data-testid="tweetText"]');
+    if (byTestId.length > 0) {
+      const text = Array.from(byTestId)
+        .map((el) => (el.innerText || el.textContent || "").trim())
+        .filter(Boolean)
+        .join(" ");
+      if (text) base = text;
     }
 
     // Strategy 2: div with lang attribute (Twitter sets lang on tweet text containers)
-    const byLang = article.querySelector("div[lang]");
-    if (byLang && byLang.closest("article") === article) {
-      const text = (byLang.innerText || byLang.textContent || "").trim();
-      if (text.length > 10) return text;
+    if (!base) {
+      const byLang = article.querySelector("div[lang]");
+      if (byLang && byLang.closest("article") === article) {
+        const text = (byLang.innerText || byLang.textContent || "").trim();
+        if (text.length > 10) base = text;
+      }
     }
 
     // Strategy 3: Largest text block in dir="auto" divs (structural heuristic)
-    const candidates = article.querySelectorAll('div[dir="auto"]');
-    let best = "";
-    for (const el of candidates) {
-      const text = (el.innerText || "").trim();
-      if (text.length > best.length && text.length > 20) {
-        // Skip if inside the username area
-        if (!el.closest('[data-testid="User-Name"]')) {
-          best = text;
+    if (!base) {
+      const candidates = article.querySelectorAll('div[dir="auto"]');
+      let best = "";
+      for (const el of candidates) {
+        const text = (el.innerText || "").trim();
+        if (text.length > best.length && text.length > 20) {
+          // Skip if inside the username area
+          if (!el.closest('[data-testid="User-Name"]')) {
+            best = text;
+          }
         }
       }
+      base = best;
     }
-    return best;
+
+    // Strategy 4: Link card text (supplemental — appended to base)
+    const cardWrapper = article.querySelector('[data-testid="card.wrapper"]');
+    if (cardWrapper) {
+      const cardText = (cardWrapper.innerText || cardWrapper.textContent || "").trim();
+      if (cardText) base = base ? base + " " + cardText : cardText;
+    }
+
+    return base;
   }
 
   /**

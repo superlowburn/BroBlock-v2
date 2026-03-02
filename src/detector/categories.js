@@ -1,6 +1,6 @@
 /**
  * BroBlock V2 — Detection Categories
- * 14 categories, 150+ weighted patterns, each with a human-readable reason.
+ * 17 categories, 200+ weighted patterns, each with a human-readable reason.
  * Loaded before engine.js. Exposes BroCategories global.
  */
 
@@ -45,7 +45,7 @@ const BroCategories = (() => {
         { regex: /the (real|ugly|honest|hard) truth about/i, weight: 12, reason: "\"hard truth\" framing" },
         { regex: /nobody is talking about this/i, weight: 14, reason: "\"nobody talks about this\"" },
         { regex: /this is the (only|best|fastest) way/i, weight: 10, reason: "single-path authority claim" },
-        { regex: /\bcontroversial\b/i, weight: 5, reason: "contrarian authority signal" },
+        { regex: /\bcontroversial\b/i, weight: 9, reason: "contrarian authority signal" },
       ],
     },
 
@@ -66,7 +66,7 @@ const BroCategories = (() => {
         { regex: /follow me for (more|daily|weekly)/i, weight: 14, reason: "follow solicitation" },
         { regex: /don.?t miss this/i, weight: 10, reason: "FOMO hook" },
         { regex: /you need to (see|read|hear|know) this/i, weight: 12, reason: "urgency hook" },
-        { regex: /^\d+\//m, weight: 8, reason: "numbered thread opener (1/)" },
+        { regex: /^\d+\//m, weight: 14, reason: "numbered thread opener (1/)" },
         { regex: /this (changed|blew|will change|will blow)/i, weight: 10, reason: "transformation hook" },
         { regex: /I wish I (knew|learned|started)/i, weight: 10, reason: "regret hook" },
         { regex: /if you.re not .{0,20}you.re (missing|behind|losing)/i, weight: 12, reason: "FOMO pressure" },
@@ -74,6 +74,10 @@ const BroCategories = (() => {
         { regex: /let that sink in/i, weight: 10, reason: "\"let that sink in\" engagement" },
         { regex: /can you guess/i, weight: 12, reason: "\"can you guess\" engagement bait" },
         { regex: /guess (how much|what|how many)/i, weight: 12, reason: "guess-the-answer engagement bait" },
+        { regex: /\u{1F9F5}(\s|$)/u, weight: 14, reason: "🧵 thread emoji" },
+        { regex: /screenshot (this|for later)/i, weight: 12, reason: "screenshot CTA" },
+        { regex: /drop (a |your )?(comment|reply|like)\s+(if|and|to)/i, weight: 12, reason: "comment-drop engagement farm" },
+        { regex: /what\s+.{0,35}should\s+I\s+(make|build|create|do|post|cover|write)\s+next/i, weight: 12, reason: "audience engineering question" },
       ],
     },
 
@@ -168,6 +172,12 @@ const BroCategories = (() => {
         { regex: /\b(spots?|seats?)\s+(are\s+)?(limited|filling|running out|almost gone)/i, weight: 16, reason: "artificial scarcity" },
         { regex: /only\s+\d+\s+(spots?|seats?|copies|left)/i, weight: 16, reason: "limited availability pressure" },
         { regex: /price (goes|going) up/i, weight: 14, reason: "price increase pressure" },
+        { regex: /\b(gumroad|stan\.store|skool|kajabi|podia|teachable|thinkific)\b/i, weight: 14, reason: "course platform shilling" },
+        { regex: /drop (me )?your email/i, weight: 16, reason: "email list harvesting" },
+        { regex: /\bsubstack\.com\b.*\bsubscribe\b/i, weight: 12, reason: "Substack subscribe push" },
+        { regex: /made\s+(the|my|a)\s+(guide|course|resource|toolkit|system|tool)\s+(public|available|free)/i, weight: 12, reason: "made guide/resource public distribution" },
+        { regex: /available\s+in\s+(the\s+)?(comments?|replies?|thread)\s*(of\s+the\s+OP)?/i, weight: 15, reason: "comment-gated distribution" },
+        { regex: /beginner.?friendly\s+(walkthrough|tutorial|guide|course|setup)\s+that\s+shows?\s+you/i, weight: 12, reason: "beginner-friendly walkthrough product positioning" },
       ],
     },
 
@@ -216,7 +226,7 @@ const BroCategories = (() => {
         { regex: /bootstrapped to/i, weight: 10, reason: "bootstrapping brag" },
         { regex: /I (run|own|manage)\s+\d+\s+(companies|businesses|brands)/i, weight: 16, reason: "multi-business flex" },
         { regex: /hired?\s+(my|a)\s+(first|team|)\s*\d+/i, weight: 10, reason: "hiring milestone" },
-        { regex: /building in (public|the open)/i, weight: 5, reason: "build-in-public signal" },
+        { regex: /building in (public|the open)/i, weight: 12, reason: "build-in-public signal" },
       ],
     },
 
@@ -258,14 +268,14 @@ const BroCategories = (() => {
       id: "testimonialHarvesting",
       label: "Testimonial Harvesting",
       patterns: [
-        { regex: /what.?s (the best|your favorite|your go.to|the #1)\s+(tool|app|book|habit|resource|advice)/i, weight: 8, reason: "engagement farming question" },
-        { regex: /drop your (best|#1|favorite|top)/i, weight: 8, reason: "\"drop your best\" engagement farm" },
-        { regex: /what (tool|app|book|habit|resource)\s+(changed|saved|transformed)/i, weight: 8, reason: "transformation question farm" },
-        { regex: /tell me your\s+(biggest|best|worst|#1)/i, weight: 8, reason: "personal story solicitation" },
-        { regex: /wrong answers only/i, weight: 6, reason: "engagement bait format" },
-        { regex: /hot take:?\s/i, weight: 6, reason: "hot take format" },
-        { regex: /unpopular opinion:?\s/i, weight: 6, reason: "unpopular opinion format" },
-        { regex: /the most underrated/i, weight: 6, reason: "\"most underrated\" engagement bait" },
+        { regex: /what.?s (the best|your favorite|your go.to|the #1)\s+(tool|app|book|habit|resource|advice)/i, weight: 12, reason: "engagement farming question" },
+        { regex: /drop your (best|#1|favorite|top)/i, weight: 12, reason: "\"drop your best\" engagement farm" },
+        { regex: /what (tool|app|book|habit|resource)\s+(changed|saved|transformed)/i, weight: 12, reason: "transformation question farm" },
+        { regex: /tell me your\s+(biggest|best|worst|#1)/i, weight: 12, reason: "personal story solicitation" },
+        { regex: /wrong answers only/i, weight: 10, reason: "engagement bait format" },
+        { regex: /hot take:?\s/i, weight: 10, reason: "hot take format" },
+        { regex: /unpopular opinion:?\s/i, weight: 10, reason: "unpopular opinion format" },
+        { regex: /the most underrated/i, weight: 10, reason: "\"most underrated\" engagement bait" },
       ],
     },
 
@@ -297,9 +307,57 @@ const BroCategories = (() => {
         { regex: /if you.?re not using (AI|ChatGPT|GPT|Claude|Cursor)/i, weight: 14, reason: "AI FOMO gatekeeping" },
         { regex: /(crazy|insane|wild|unbelievable) what (AI|ChatGPT|GPT|Claude) can/i, weight: 10, reason: "AI hype exclamation" },
         { regex: /AI is (eating|taking over|changing|disrupting|transforming)/i, weight: 10, reason: "AI disruption narrative" },
-        { regex: /just (asked|told|prompted)\s+(ChatGPT|GPT|Claude|AI)\s+to/i, weight: 5, reason: "AI usage performance" },
+        { regex: /just (asked|told|prompted)\s+(ChatGPT|GPT|Claude|AI)\s+to/i, weight: 10, reason: "AI usage performance" },
         { regex: /shipped (a|my|this)\s+.{0,20}\s+(MVP|prototype|app|SaaS|product)\s+(in|under|within)/i, weight: 14, reason: "rapid shipping flex" },
         { regex: /you don.?t need (to learn|a degree|to code|developers?) (anymore|any more|when)/i, weight: 14, reason: "skills-obsolescence fear" },
+        { regex: /I\s+built\s+(the|a|my)\s+(ultimate|best|complete|full|advanced)\s+.{0,40}AI\s+(toolkit|system|stack|workflow|automation|setup)/i, weight: 16, reason: "built the ultimate AI Toolkit promotion" },
+        { regex: /handles?\s+(prospect\s+research|lead\s+gen|outreach|sales\s+calls?|cold\s+email)/i, weight: 12, reason: "AI tool for sales tasks pitch" },
+        { regex: /in\s+(just\s+)?(minutes?|seconds?)\s+(it\s+)?(handles?|automates?|processes?|completes?)/i, weight: 12, reason: "AI speed claim (handles in minutes)" },
+      ],
+    },
+
+    // ── 15. Sales/GTM Tool Bro ──
+    {
+      id: "salesGtmBro",
+      label: "Sales/GTM Tool Bro",
+      patterns: [
+        { regex: /\b(GTM|go.?to.?market)\s+(engineer|specialist|expert|strategy|workflow|automation)/i, weight: 14, reason: "GTM title/workflow language" },
+        { regex: /\bsales\s+automation\b/i, weight: 14, reason: "sales automation tool pitch" },
+        { regex: /\b(cold\s+email|prospect\s+research|outreach\s+(tool|automation|platform))\b/i, weight: 14, reason: "sales ops vocabulary" },
+        { regex: /\bLinkedIn\s+automation\b/i, weight: 14, reason: "LinkedIn automation shilling" },
+        { regex: /(reply\.io|lemlist|instantly\.ai|smartlead|apollo\.io|outreach\.io|salesloft)/i, weight: 14, reason: "B2B sales tool name-drop" },
+        { regex: /\b(reply rate|open rate|conversion rate)\b.*\%/i, weight: 12, reason: "sales metrics flex" },
+        { regex: /generate\s+(more\s+)?(qualified\s+)?leads/i, weight: 12, reason: "lead generation promise" },
+      ],
+    },
+
+    // ── 16. Productivity/Routine Hacking ──
+    {
+      id: "productivityBro",
+      label: "Productivity/Routine Hacking",
+      patterns: [
+        { regex: /my\s+morning\s+routine/i, weight: 14, reason: "morning routine post" },
+        { regex: /I\s+(wake|get\s+up)\s+(at|by)\s+\d+\s*(am|a\.?m)/i, weight: 12, reason: "early wake-up flex" },
+        { regex: /(my|the)\s+(system|process|framework|method)\s+(for|to)\s+(get|do|accomplish|produce).{0,30}(more|faster|efficiently)/i, weight: 12, reason: "productivity system pitch" },
+        { regex: /how\s+I\s+(get|stay|remain)\s+(more\s+)?(productive|organized|focused)/i, weight: 12, reason: "productivity advice hook" },
+        { regex: /my\s+(daily|weekly)\s+(schedule|routine|workflow|calendar)/i, weight: 10, reason: "routine sharing performative" },
+        { regex: /\b(time\s+blocking|deep\s+work|time\s+management)\b.{0,30}(system|strategy|method|hack)/i, weight: 10, reason: "time management system pitch" },
+        { regex: /(Notion|Obsidian|Roam\s+Research|Logseq)\s+(setup|system|template|dashboard|workflow)/i, weight: 8, reason: "productivity app system flex" },
+      ],
+    },
+
+    // ── 17. Mindset/Pseudo-Psychology ──
+    {
+      id: "mindsetBro",
+      label: "Mindset/Pseudo-Psychology",
+      patterns: [
+        { regex: /\blimiting\s+beliefs?\b/i, weight: 12, reason: "limiting beliefs language" },
+        { regex: /\b(abundance|scarcity)\s+mindset\b/i, weight: 14, reason: "abundance/scarcity mindset framing" },
+        { regex: /\bgrowth\s+mindset\b/i, weight: 10, reason: "growth mindset pop-psych" },
+        { regex: /your\s+(thoughts?|beliefs?|energy|vibration)\s+(create|attract|manifest)/i, weight: 16, reason: "thought-creates-reality claim" },
+        { regex: /\b(law of attraction|manifestation?|high vibration)\b/i, weight: 14, reason: "manifestation pseudo-science" },
+        { regex: /\bthe\s+universe\s+(is|will|wants|rewards|sends?)\b/i, weight: 12, reason: "universe-as-agent framing" },
+        { regex: /\bsubconscious\s+(reprogramming|mind|block)/i, weight: 12, reason: "subconscious reprogramming pitch" },
       ],
     },
   ];

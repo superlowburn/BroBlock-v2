@@ -100,8 +100,9 @@ const BroBlockScorer = (() => {
 
     // Compound bonus only counts non-interested categories
     const activeCount = adjusted.filter((b) => !b.interested).length;
-    if (activeCount >= 3) {
-      total += (activeCount - 2) * 8;
+    if (activeCount >= 2) {
+      const multiplier = activeCount >= 5 ? 1.55 : activeCount === 4 ? 1.40 : activeCount === 3 ? 1.25 : 1.10;
+      total = Math.round(total * multiplier);
     }
 
     const reasons = adjusted
@@ -109,7 +110,7 @@ const BroBlockScorer = (() => {
       .slice(0, 5);
 
     return {
-      score: Math.min(Math.max(total, 0), 100),
+      score: Math.min(Math.max(total, 0), 120),
       categories: adjusted.map((b) => b.category),
       reasons,
       breakdown: adjusted,

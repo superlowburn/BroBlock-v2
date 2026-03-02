@@ -35,7 +35,7 @@ const BroDetector = (() => {
   const NAME_PATTERNS = [
     { test: /\b(CEO|founder|coach|mentor|trader|investor)\b/i, weight: 8 },
     { test: /\b(7.fig|6.fig|serial\s+entrepreneur)\b/i, weight: 10 },
-    { test: /\u{1F680}|\u{1F4B0}|\u{1F4B8}|\u{1F4A1}|\u{1F525}/u, weight: 5 },
+    { test: /(\u{1F680}|\u{1F4B0}|\u{1F4B8}|\u{1F4A1}|\u{1F525}|\u{1F4AF}|\u{1F911}){2,}/u, weight: 8 },
     { test: /\b(hustl|grind|alpha|sigma|wealth|millionaire|billionaire)\b/i, weight: 8 },
     { test: /\b(helping|teaching|showing)\s+(you|people|entrepreneurs)/i, weight: 6 },
   ];
@@ -81,9 +81,11 @@ const BroDetector = (() => {
       }
     }
 
-    // Compound bonus: 3+ categories = extra signal
-    if (breakdown.length >= 3) {
-      total += (breakdown.length - 2) * 8;
+    // Compound bonus: 2+ categories = multiplicative scaling
+    if (breakdown.length >= 2) {
+      const n = breakdown.length;
+      const multiplier = n >= 5 ? 1.55 : n === 4 ? 1.40 : n === 3 ? 1.25 : 1.10;
+      total = Math.round(total * multiplier);
     }
 
     // Dampener: analytical/critical language reduces score
@@ -94,7 +96,7 @@ const BroDetector = (() => {
         if (test.test(text)) dampener += weight;
         test.lastIndex = 0;
       }
-      total += Math.max(dampener, -20);
+      total += Math.max(dampener, -15);
     }
 
     // Profile signals (only amplify existing text signal)
@@ -114,7 +116,7 @@ const BroDetector = (() => {
       .slice(0, 5);
 
     return {
-      score: Math.min(Math.max(total, 0), 100),
+      score: Math.min(Math.max(total, 0), 120),
       categories: breakdown.map((b) => b.category),
       reasons,
       breakdown,
