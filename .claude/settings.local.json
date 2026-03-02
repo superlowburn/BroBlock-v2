@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check src/constants.js)",
+      "Bash(node --check src/detector/categories.js)",
+      "Bash(node --check src/detector/engine.js)",
+      "Bash(node --check src/background.js)",
+      "Bash(node --check src/content/index.js src/content/scorer.js src/content/observer.js src/content/ui.js src/content/cleanup.js src/content/extractor.js)",
+      "Bash(node -e \"JSON.parse\\(require\\(''fs''\\).readFileSync\\(''manifest.json'', ''utf8''\\)\\); console.log\\(''manifest.json OK''\\)\")",
+      "Bash(node --check src/content/scorer.js)",
+      "Bash(node --check src/content/cleanup.js)",
+      "Bash(node --check src/content/ui.js)",
+      "Bash(node --check src/content/index.js)",
+      "Bash(node --check src/content/observer.js)",
+      "Bash(node --check src/storage.js)",
+      "Bash(node --check src/content/extractor.js)",
+      "Bash(node --check src/popup.js)",
+      "Bash(node --check src/onboarding.js)",
+      "Bash(ls src/storage*)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(ssh-keyscan -t ed25519 github.com)",
+      "Bash(~/.ssh/known_hosts)",
+      "Bash(gh auth status)",
+      "Bash(brew install gh)",
+      "Bash(gh auth login --git-protocol ssh --hostname github.com -p ssh)",
+      "Bash(git init -b main)",
+      "Bash(git add -A)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

@@ -1,0 +1,299 @@
+/*
+ * BroBlock V2 — Shadow DOM Styles
+ * Theme-aware via inherited CSS custom properties from :root (content.css).
+ * Only --bb-font is defined here; all color tokens cascade through shadow boundary.
+ * __FONT_BASE__ replaced at runtime.
+ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("__FONT_BASE__/inter-latin.woff2") format("woff2");
+}
+
+:host {
+  --bb-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ── Frost Tab ── */
+
+.bb-frost-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 14px;
+  background: var(--bb-tab-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-left: 3px solid var(--bb-gray);
+  font-family: var(--bb-font);
+  animation: bb-tab-in 250ms ease-out;
+}
+
+/* Severity accent on frost tab */
+.bb-frost-tab[data-severity="low"] { border-left-color: var(--bb-green); }
+.bb-frost-tab[data-severity="moderate"] { border-left-color: var(--bb-amber); }
+.bb-frost-tab[data-severity="high"] { border-left-color: var(--bb-red); }
+.bb-frost-tab[data-severity="extreme"] { border-left-color: var(--bb-red-strong); }
+.bb-frost-tab[data-severity="knownBro"] { border-left-color: var(--bb-red); }
+
+@keyframes bb-tab-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bb-frost-tab-handle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bb-tab-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.bb-frost-tab-meta {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--bb-tab-meta);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+/* ── Floating Pill ── */
+
+.bb-floating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: var(--bb-font);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: var(--bb-fp-bg);
+  border: 1px solid var(--bb-fp-border);
+  color: var(--bb-fp-text);
+  pointer-events: auto;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.bb-floating-pill:hover {
+  background: var(--bb-fp-hover-bg);
+}
+
+.bb-floating-pill-label {
+  font-weight: 400;
+  opacity: 0.4;
+  font-size: 12px;
+}
+
+.bb-floating-pill-score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.bb-floating-pill[data-severity="low"] .bb-floating-pill-score { color: var(--bb-green); }
+.bb-floating-pill[data-severity="moderate"] .bb-floating-pill-score { color: var(--bb-amber); }
+.bb-floating-pill[data-severity="high"] .bb-floating-pill-score { color: var(--bb-red); }
+.bb-floating-pill[data-severity="extreme"] .bb-floating-pill-score { color: var(--bb-red-strong); }
+.bb-floating-pill[data-severity="knownBro"] .bb-floating-pill-score { color: var(--bb-red); }
+
+/* ── Menu ── */
+
+.bb-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+}
+
+.bb-menu {
+  position: fixed;
+  z-index: 99999;
+  font-family: var(--bb-font);
+  background: var(--bb-menu-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bb-menu-border);
+  border-radius: 10px;
+  padding: 6px;
+  min-width: 220px;
+  max-width: 300px;
+  box-shadow: var(--bb-menu-shadow);
+  animation: bb-menu-in 100ms ease-out;
+}
+
+@keyframes bb-menu-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.bb-menu-header {
+  padding: 8px 8px 10px;
+  border-bottom: 1px solid var(--bb-menu-header-border);
+  margin-bottom: 4px;
+}
+
+.bb-menu-handle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bb-menu-handle);
+  margin-bottom: 2px;
+}
+
+.bb-menu-score {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.bb-menu-score[data-severity="none"] { color: var(--bb-green); }
+.bb-menu-score[data-severity="low"] { color: var(--bb-green); }
+.bb-menu-score[data-severity="moderate"] { color: var(--bb-amber); }
+.bb-menu-score[data-severity="high"] { color: var(--bb-red); }
+.bb-menu-score[data-severity="extreme"] { color: var(--bb-red-strong); }
+
+/* Topics */
+.bb-menu-topics {
+  margin-top: 6px;
+}
+
+.bb-menu-topics-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--bb-menu-topics-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 4px;
+  margin-bottom: 2px;
+}
+
+.bb-menu-topic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 4px;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.bb-menu-topic-row:hover {
+  background: var(--bb-menu-hover);
+}
+
+.bb-menu-topic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bb-menu-topic-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bb-menu-topic-name);
+}
+
+.bb-menu-topic-reason {
+  font-size: 11px;
+  color: var(--bb-menu-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bb-menu-topic-heart {
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--bb-menu-heart);
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: color 0.12s ease;
+}
+
+.bb-menu-topic-heart:hover {
+  color: var(--bb-red);
+}
+
+.bb-menu-topic-heart.bb-interested {
+  color: var(--bb-red);
+}
+
+.bb-menu-topic-name.bb-interested {
+  color: var(--bb-menu-dim);
+}
+
+/* Menu items */
+.bb-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bb-menu-text);
+  font-family: var(--bb-font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  text-align: left;
+}
+
+.bb-menu-item:hover {
+  background: var(--bb-menu-hover);
+}
+
+.bb-menu-item:focus-visible {
+  outline: 1px solid var(--bb-amber);
+  outline-offset: -1px;
+}
+
+.bb-menu-item.bb-menu-item-bro {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  color: var(--bb-red);
+}
+
+.bb-menu-item.bb-menu-item-trust {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  color: var(--bb-green);
+}
+
+.bb-menu-item-label {
+  font-weight: 600;
+}
+
+.bb-menu-item-desc {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--bb-menu-item-desc);
+}
+
+.bb-menu-divider {
+  height: 1px;
+  background: var(--bb-menu-divider);
+  margin: 4px 0;
+}

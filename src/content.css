@@ -1,0 +1,277 @@
+/*
+ * BroBlock V2 — Host Page Styles
+ * Theme-aware. Adapts to Twitter light, dim, and lights-out modes.
+ * Variables on :root cascade into shadow DOM for consistent theming.
+ */
+
+:root {
+  --bb-frost-blur: 14px;
+  --bb-frost-saturate: 60%;
+  --bb-frost-bg: rgba(30, 30, 35, 0.75);
+  --bb-z-backdrop: 10;
+  --bb-z-card: 11;
+  --bb-z-pill-float: 12;
+
+  /* Severity colors */
+  --bb-green: #5cb870;
+  --bb-amber: #d4a04a;
+  --bb-red: #d45a5a;
+  --bb-red-strong: #c43c3c;
+  --bb-gray: #888;
+
+  /* Inline pill backgrounds */
+  --bb-pill-bg-none: rgba(128, 128, 128, 0.15);
+  --bb-pill-bg-low: rgba(92, 184, 112, 0.18);
+  --bb-pill-bg-moderate: rgba(212, 160, 74, 0.18);
+  --bb-pill-bg-high: rgba(212, 90, 90, 0.18);
+  --bb-pill-bg-extreme: rgba(196, 60, 60, 0.22);
+  --bb-pill-bg-trusted: rgba(92, 184, 112, 0.18);
+  --bb-pill-bg-bro: rgba(212, 90, 90, 0.18);
+
+  /* Shadow DOM tokens — cascade through shadow boundaries */
+  --bb-tab-bg: rgba(38, 38, 42, 0.94);
+  --bb-tab-text: #999;
+  --bb-tab-meta: #555;
+  --bb-fp-bg: rgba(255, 255, 255, 0.12);
+  --bb-fp-border: rgba(255, 255, 255, 0.1);
+  --bb-fp-hover-bg: rgba(255, 255, 255, 0.16);
+  --bb-fp-text: #ccc;
+  --bb-menu-bg: rgba(32, 32, 36, 0.96);
+  --bb-menu-border: rgba(255, 255, 255, 0.06);
+  --bb-menu-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --bb-menu-handle: #777;
+  --bb-menu-text: #ccc;
+  --bb-menu-dim: #555;
+  --bb-menu-hover: rgba(255, 255, 255, 0.05);
+  --bb-menu-divider: rgba(255, 255, 255, 0.06);
+  --bb-menu-topic-name: #ccc;
+  --bb-menu-heart: #555;
+  --bb-menu-header-border: rgba(255, 255, 255, 0.06);
+  --bb-menu-item-desc: #555;
+  --bb-menu-topics-label: #555;
+}
+
+/* ── Light mode overrides ── */
+:root[data-bb-theme="light"] {
+  --bb-frost-bg: rgba(250, 250, 252, 0.82);
+
+  /* Darker severity colors for contrast on light surfaces */
+  --bb-green: #2e8b47;
+  --bb-amber: #b8862d;
+  --bb-red: #c23838;
+  --bb-red-strong: #a02020;
+  --bb-gray: #999;
+
+  --bb-pill-bg-none: rgba(128, 128, 128, 0.10);
+  --bb-pill-bg-low: rgba(46, 139, 71, 0.10);
+  --bb-pill-bg-moderate: rgba(184, 134, 45, 0.10);
+  --bb-pill-bg-high: rgba(194, 56, 56, 0.10);
+  --bb-pill-bg-extreme: rgba(160, 32, 32, 0.12);
+  --bb-pill-bg-trusted: rgba(46, 139, 71, 0.10);
+  --bb-pill-bg-bro: rgba(194, 56, 56, 0.10);
+
+  --bb-tab-bg: rgba(255, 255, 255, 0.96);
+  --bb-tab-text: #555;
+  --bb-tab-meta: #999;
+  --bb-fp-bg: rgba(0, 0, 0, 0.05);
+  --bb-fp-border: rgba(0, 0, 0, 0.1);
+  --bb-fp-hover-bg: rgba(0, 0, 0, 0.08);
+  --bb-fp-text: #333;
+  --bb-menu-bg: rgba(255, 255, 255, 0.97);
+  --bb-menu-border: rgba(0, 0, 0, 0.1);
+  --bb-menu-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  --bb-menu-handle: #888;
+  --bb-menu-text: #1a1a1a;
+  --bb-menu-dim: #999;
+  --bb-menu-hover: rgba(0, 0, 0, 0.04);
+  --bb-menu-divider: rgba(0, 0, 0, 0.06);
+  --bb-menu-topic-name: #333;
+  --bb-menu-heart: #bbb;
+  --bb-menu-header-border: rgba(0, 0, 0, 0.06);
+  --bb-menu-item-desc: #999;
+  --bb-menu-topics-label: #999;
+}
+
+article.bb-frosted {
+  position: relative !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.bb-frost-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: var(--bb-z-backdrop) !important;
+  backdrop-filter: blur(var(--bb-frost-blur)) saturate(var(--bb-frost-saturate)) !important;
+  -webkit-backdrop-filter: blur(var(--bb-frost-blur)) saturate(var(--bb-frost-saturate)) !important;
+  background: var(--bb-frost-bg) !important;
+  pointer-events: auto !important;
+  animation: bb-frost-in 350ms ease-out !important;
+}
+
+@keyframes bb-frost-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bb-pill-host {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: var(--bb-z-pill-float) !important;
+  pointer-events: auto !important;
+}
+
+/* ── Inline Pill ── */
+.bb-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  margin-left: 6px !important;
+  padding: 2px 7px !important;
+  border-radius: 9999px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 18px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  vertical-align: middle !important;
+  border: none !important;
+  transition: opacity 0.15s ease !important;
+  text-decoration: none !important;
+}
+
+.bb-pill:hover {
+  opacity: 0.7 !important;
+}
+
+/* Zero scores: green like low — not a bro */
+.bb-pill[data-severity="none"] {
+  color: var(--bb-green) !important;
+  background: var(--bb-pill-bg-low) !important;
+}
+
+.bb-pill[data-severity="low"] {
+  color: var(--bb-green) !important;
+  background: var(--bb-pill-bg-low) !important;
+}
+.bb-pill[data-severity="moderate"] {
+  color: var(--bb-amber) !important;
+  background: var(--bb-pill-bg-moderate) !important;
+}
+.bb-pill[data-severity="high"] {
+  color: var(--bb-red) !important;
+  background: var(--bb-pill-bg-high) !important;
+}
+.bb-pill[data-severity="extreme"] {
+  color: var(--bb-red-strong) !important;
+  background: var(--bb-pill-bg-extreme) !important;
+}
+.bb-pill[data-severity="trusted"] {
+  color: var(--bb-green) !important;
+  background: var(--bb-pill-bg-trusted) !important;
+}
+.bb-pill[data-severity="knownBro"] {
+  color: var(--bb-red) !important;
+  background: var(--bb-pill-bg-bro) !important;
+}
+
+/* ── Pill Label ── */
+.bb-pill-label {
+  pointer-events: none !important;
+}
+
+/* ── Pill Toggle Switch ── */
+.bb-pill-toggle {
+  position: relative !important;
+  display: inline-block !important;
+  width: 24px !important;
+  height: 14px !important;
+  margin-left: 5px !important;
+  border-radius: 7px !important;
+  background: var(--bb-gray) !important;
+  cursor: pointer !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  transition: background 0.2s ease !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.bb-pill-toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--bb-amber) !important;
+}
+
+.bb-pill-toggle-knob {
+  position: absolute !important;
+  top: 2px !important;
+  left: 2px !important;
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  transition: transform 0.2s ease !important;
+  pointer-events: none !important;
+}
+
+.bb-pill-toggle[aria-checked="true"] {
+  background: var(--bb-red) !important;
+}
+
+.bb-pill-toggle[aria-checked="true"] .bb-pill-toggle-knob {
+  transform: translateX(10px) !important;
+}
+
+/* ── Undo Toast ── */
+.bb-undo-toast {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 16px !important;
+  border-radius: 10px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  background: var(--bb-menu-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--bb-menu-border) !important;
+  box-shadow: var(--bb-menu-shadow) !important;
+  color: var(--bb-menu-text) !important;
+  animation: bb-toast-in 200ms ease-out !important;
+  pointer-events: auto !important;
+}
+
+@keyframes bb-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.bb-undo-toast-text {
+  white-space: nowrap !important;
+}
+
+.bb-undo-toast-btn {
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--bb-green) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.12s ease !important;
+}
+
+.bb-undo-toast-btn:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+}

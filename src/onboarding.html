@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="onboarding.css">
+  <title>BroBlock — Welcome</title>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Step 1: Welcome -->
+    <div class="step active" id="step1">
+      <div class="step-icon">B</div>
+      <h1>Welcome to BroBlock</h1>
+      <p class="subtitle">Your timeline is about to get a lot less bro.</p>
+      <p class="desc">
+        BroBlock scans tweets for hustle culture, fake gurus, engagement bait,
+        and crypto grift — then frosts them so you can scroll in peace.
+      </p>
+      <button class="btn-primary" id="btn1">Get Started</button>
+    </div>
+
+    <!-- Step 2: How It Works -->
+    <div class="step" id="step2">
+      <h2>How It Works</h2>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-num">1</div>
+          <div class="how-title">Scan</div>
+          <div class="how-desc">Every tweet is analyzed as it appears in your feed.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">2</div>
+          <div class="how-title">Score</div>
+          <div class="how-desc">Pattern matching across 16 categories produces a Bro Score (0-100).</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">3</div>
+          <div class="how-title">Frost</div>
+          <div class="how-desc">High scorers get blurred. You decide who stays and who goes.</div>
+        </div>
+      </div>
+
+      <!-- Demo frost -->
+      <div class="demo-section">
+        <p class="demo-label">This is what a frosted tweet looks like:</p>
+        <div class="demo-tweet">
+          <div class="demo-tweet-content">
+            <div class="demo-avatar"></div>
+            <div class="demo-text">
+              <div class="demo-name">@hustlebro99</div>
+              <div class="demo-body">I made $47k/month using this one simple trick that most people don't know about. DM me for the free guide. Only 5 spots left!</div>
+            </div>
+          </div>
+          <div class="demo-frost">
+            <div class="demo-frost-card">
+              <div class="demo-card-handle">@hustlebro99</div>
+              <div class="demo-card-score">
+                <span class="demo-card-label">Bro Score</span>
+                <span class="demo-card-value">87</span>
+              </div>
+              <div class="demo-card-why">
+                <div class="demo-card-why-label">Why flagged</div>
+                <ul>
+                  <li>Income Claim: claims specific income figure</li>
+                  <li>Disguised Selling: DM funnel</li>
+                  <li>Fake Scarcity: artificial limited spots</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn2">Next</button>
+    </div>
+
+    <!-- Step 3: Sensitivity -->
+    <div class="step" id="step3">
+      <h2>Set Your Sensitivity</h2>
+      <p class="desc">
+        How aggressive should BroBlock be? You can always change this later in the popup.
+      </p>
+
+      <div class="sensitivity-card">
+        <div class="sens-header">
+          <span class="sens-label">Sensitivity</span>
+          <span class="sens-value" id="sensValue">Balanced</span>
+        </div>
+        <input type="range" id="sensSlider" min="15" max="85" value="60" class="slider">
+        <div class="sens-range">
+          <span>Chill</span>
+          <span>Aggressive</span>
+        </div>
+        <p class="sens-hint" id="sensHint">Also catches engagement bait, fake authority, hustle culture</p>
+      </div>
+
+      <button class="btn-primary" id="btn3">Start Blocking Bros</button>
+      <p class="skip-text">This works best on <a href="https://x.com/comforteagle/status/2027589656552812546" target="_blank" rel="noopener">x.com</a></p>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress">
+      <span class="dot active" data-step="1"></span>
+      <span class="dot" data-step="2"></span>
+      <span class="dot" data-step="3"></span>
+    </div>
+
+  </div>
+
+  <script src="constants.js"></script>
+  <script src="onboarding.js"></script>
+</body>
+</html>

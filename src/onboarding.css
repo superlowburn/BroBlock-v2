@@ -1,0 +1,384 @@
+/*
+ * BroBlock V2 — Onboarding Styles
+ * Full-page welcome flow. White, clean, matches popup.
+ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin.woff2") format("woff2");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fff;
+  color: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: #888;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: #1a1a1a;
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+  padding: 40px 24px;
+  position: relative;
+}
+
+/* ── Steps ── */
+.step {
+  display: none;
+  animation: fadeIn 300ms ease-out;
+}
+
+.step.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-weight: 800;
+  font-size: 28px;
+  color: #c23838;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.desc {
+  font-size: 15px;
+  color: #888;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* ── Primary Button ── */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-top: 8px;
+}
+
+.btn-primary:hover {
+  background: #333;
+}
+
+/* ── How It Works Grid ── */
+.how-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.how-card {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  padding: 14px 12px;
+}
+
+.how-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #c23838;
+  margin-bottom: 6px;
+}
+
+.how-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.how-desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* ── Demo Tweet ── */
+.demo-section {
+  margin-bottom: 20px;
+}
+
+.demo-label {
+  font-size: 13px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.demo-tweet {
+  position: relative;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.demo-tweet-content {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  filter: blur(8px);
+  opacity: 0.5;
+}
+
+.demo-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.demo-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.demo-body {
+  font-size: 15px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.demo-frost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(250, 250, 252, 0.5);
+}
+
+.demo-frost-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 14px 18px;
+  max-width: 280px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.demo-card-handle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.demo-card-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.demo-card-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.demo-card-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #c23838;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.demo-card-why {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.demo-card-why-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.demo-card-why ul {
+  list-style: none;
+  padding: 0;
+}
+
+.demo-card-why li {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  padding-left: 10px;
+  position: relative;
+}
+
+.demo-card-why li::before {
+  content: "\2022";
+  position: absolute;
+  left: 0;
+  color: #ccc;
+}
+
+/* ── Sensitivity Card ── */
+.sensitivity-card {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.sens-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.sens-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #888;
+}
+
+.sens-value {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #2e8b47, #b8862d, #c23838);
+  outline: none;
+  margin-bottom: 6px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.sens-range {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #999;
+}
+
+.sens-hint {
+  font-size: 14px;
+  color: #999;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.skip-text {
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+  margin-top: 12px;
+}
+
+/* ── Progress Dots ── */
+.progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ddd;
+  transition: background 0.2s ease;
+}
+
+.dot.active {
+  background: #1a1a1a;
+}
