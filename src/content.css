@@ -134,28 +134,35 @@ article.bb-frosted {
   user-select: none !important;
 }
 
-.bb-pill:hover {
-  opacity: 0.7 !important;
-}
-
 .bb-pill:focus-visible {
   outline: 2px solid var(--bb-amber) !important;
   outline-offset: 1px !important;
 }
 
-/* Binary state: green = clean, red = known bro */
+/* Clean/trusted: ghost outline — action affordance, not a classification badge */
 .bb-pill[data-state="clean"] {
   color: var(--bb-green) !important;
-  background: var(--bb-pill-bg-clean) !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1.5px var(--bb-green) !important;
+  opacity: 0.45 !important;
 }
+.bb-pill[data-state="clean"]:hover {
+  opacity: 1 !important;
+}
+
+/* Bro: solid filled badge — confirmed manual status */
 .bb-pill[data-state="bro"] {
   color: var(--bb-red) !important;
   background: var(--bb-pill-bg-bro) !important;
+  opacity: 1 !important;
 }
+
+/* Trusted: ghost outline, non-interactive */
 .bb-pill[data-state="trusted"] {
   color: var(--bb-green) !important;
-  background: var(--bb-pill-bg-clean) !important;
-  opacity: 0.6 !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1.5px var(--bb-green) !important;
+  opacity: 0.35 !important;
   cursor: default !important;
 }
 

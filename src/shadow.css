@@ -82,23 +82,27 @@
   transition: opacity 0.12s ease;
 }
 
-.bb-floating-pill:hover {
-  opacity: 0.8;
-}
-
 .bb-floating-pill:focus-visible {
   outline: 2px solid var(--bb-amber);
   outline-offset: 1px;
 }
 
-/* Binary state: green = clean, red = known bro */
+/* Clean: ghost outline — action affordance, not a badge */
 .bb-floating-pill[data-state="clean"] {
-  background: rgba(92, 184, 112, 0.25);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--bb-green);
   color: var(--bb-green);
+  opacity: 0.5;
 }
+.bb-floating-pill[data-state="clean"]:hover {
+  opacity: 1;
+}
+
+/* Bro: solid filled badge — confirmed manual status */
 .bb-floating-pill[data-state="bro"] {
   background: rgba(212, 90, 90, 0.25);
   color: var(--bb-red);
+  opacity: 1;
 }
 
 /* ── Menu ── */

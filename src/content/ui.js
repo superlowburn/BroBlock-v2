@@ -106,7 +106,8 @@ const BroBlockUI = (() => {
       "aria-label",
       isKnownBro ? "Marked as bro \u2014 click to unmark" : "Mark as bro"
     );
-    pill.textContent = "Bro";
+    // "Bro" only when confirmed; ghost dot when untagged (action, not status)
+    pill.textContent = isKnownBro ? "Bro" : "\u00b7";
 
     const tooltip = buildTooltip(data.score, data.userMeta);
     if (tooltip) pill.title = tooltip;
@@ -160,7 +161,8 @@ const BroBlockUI = (() => {
       "aria-label",
       isKnownBro ? "Marked as bro \u2014 click to unmark" : "Mark as bro"
     );
-    pill.textContent = "Bro";
+    // "Bro" only when confirmed; ghost dot when untagged (action, not status)
+    pill.textContent = isKnownBro ? "Bro" : "\u00b7";
 
     // Binary state → color
     pill.dataset.state = isKnownBro ? "bro" : isTrusted ? "trusted" : "clean";
