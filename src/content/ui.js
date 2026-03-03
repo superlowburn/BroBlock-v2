@@ -8,6 +8,12 @@
 const BroBlockUI = (() => {
   let state = null;
   let shadowCSS = "";
+  let _instantMode = false;
+  const _pillData = new WeakMap();
+  let _menuHost = null;
+  let _menuRoot = null;
+  let _menuHideTimer = null;
+  let _menuActivePill = null;
 
   function init(s) {
     state = s;
@@ -55,6 +61,7 @@ const BroBlockUI = (() => {
     // Layer 1: Blur backdrop (must be in Twitter's DOM for backdrop-filter)
     const backdrop = document.createElement("div");
     backdrop.className = "bb-frost-backdrop";
+    if (_instantMode) backdrop.style.setProperty("animation", "none", "important");
     // Click backdrop to peek (unfrost and show tweet content)
     backdrop.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -150,6 +157,10 @@ const BroBlockUI = (() => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onBroClick(e); }
     });
 
+    // Store data + attach hover menu
+    _pillData.set(pill, data);
+    attachMenuHover(pill);
+
     tab.appendChild(pill);
     shadowRoot.appendChild(tab);
   }
@@ -222,6 +233,10 @@ const BroBlockUI = (() => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onBroClick(e); }
       });
     }
+
+    // Store data + attach hover menu
+    _pillData.set(pill, data);
+    attachMenuHover(pill);
 
     // Insert after timestamp anchor
     const anchor = BroBlockExtractor.findTimestampAnchor(article);
@@ -326,8 +341,10 @@ const BroBlockUI = (() => {
       chrome.storage.sync.set({ knownBros: bros, trustedUsers: trusted, threshold: t });
     });
 
-    // Rescan all visible articles — frosts every tweet by this handle
+    // Rescan all visible articles — frosts every tweet by this handle (instant, no animation)
+    _instantMode = true;
     BroBlockObserver.rescan(state);
+    _instantMode = false;
 
     // Show undo toast
     showUndoToast("Tagged @" + handle + " as bro", () => {
@@ -347,8 +364,10 @@ const BroBlockUI = (() => {
       chrome.storage.sync.set({ knownBros: bros });
     });
 
-    // Rescan — removes frost, re-scores normally
+    // Rescan — removes frost, re-scores normally (instant, no animation)
+    _instantMode = true;
     BroBlockObserver.rescan(state);
+    _instantMode = false;
   }
 
   function doWhitelist(handle, s) {
@@ -372,8 +391,10 @@ const BroBlockUI = (() => {
       chrome.storage.sync.set({ knownBros: bros, trustedUsers: trusted, threshold: t });
     });
 
-    // Rescan all visible articles — removes frost for this handle
+    // Rescan all visible articles — removes frost for this handle (instant)
+    _instantMode = true;
     BroBlockObserver.rescan(s);
+    _instantMode = false;
 
     // Show undo toast
     showUndoToast("Trusted @" + handle, () => {
@@ -393,8 +414,10 @@ const BroBlockUI = (() => {
       chrome.storage.sync.set({ trustedUsers: trusted });
     });
 
-    // Rescan — re-scores normally
+    // Rescan — re-scores normally (instant)
+    _instantMode = true;
     BroBlockObserver.rescan(state);
+    _instantMode = false;
   }
 
   function doToggleInterest(categoryId) {
@@ -407,6 +430,255 @@ const BroBlockUI = (() => {
 
     // Persist in-memory state directly (avoids read-then-toggle race)
     chrome.storage.sync.set({ interestedCategories: [...state.interestedCategories] });
+  }
+
+  // ═══════════════════════════════════════
+  // HOVER MENU
+  // ═══════════════════════════════════════
+
+  function getSeverity(score) {
+    if (score <= 15) return "none";
+    if (score <= 40) return "low";
+    if (score <= 70) return "moderate";
+    if (score <= 100) return "high";
+    return "extreme";
+  }
+
+  function ensureMenuHost() {
+    if (_menuHost && _menuHost.isConnected) return;
+    _menuHost = document.createElement("div");
+    _menuHost.id = "bb-menu-host";
+    _menuHost.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;z-index:99999;pointer-events:none;";
+    document.body.appendChild(_menuHost);
+    _menuRoot = _menuHost.attachShadow({ mode: "open" });
+    injectShadowStyles(_menuRoot);
+  }
+
+  function buildMenu(data) {
+    const frag = document.createDocumentFragment();
+
+    // Backdrop — click to dismiss
+    const backdrop = document.createElement("div");
+    backdrop.className = "bb-menu-backdrop";
+    backdrop.addEventListener("click", (e) => { e.stopPropagation(); dismissMenu(); });
+    frag.appendChild(backdrop);
+
+    const menu = document.createElement("div");
+    menu.className = "bb-menu";
+    menu.style.pointerEvents = "auto";
+
+    // Keep menu open while hovering it
+    menu.addEventListener("mouseenter", () => { cancelMenuHide(); });
+    menu.addEventListener("mouseleave", () => { scheduleMenuHide(); });
+
+    // ── Header ──
+    const header = document.createElement("div");
+    header.className = "bb-menu-header";
+
+    const handleEl = document.createElement("div");
+    handleEl.className = "bb-menu-handle";
+    handleEl.textContent = data.handle ? "@" + data.handle : "Unknown";
+    header.appendChild(handleEl);
+
+    if (typeof data.score === "number" && data.score > 0) {
+      const scoreEl = document.createElement("div");
+      scoreEl.className = "bb-menu-score";
+      scoreEl.dataset.severity = getSeverity(data.score);
+      scoreEl.textContent = String(data.score);
+      header.appendChild(scoreEl);
+    }
+
+    menu.appendChild(header);
+
+    // ── Topics ──
+    if (data.breakdown && data.breakdown.length > 0) {
+      const activeTopics = data.breakdown.filter((b) => b.points > 0 || b.interested);
+      if (activeTopics.length > 0) {
+        const topics = document.createElement("div");
+        topics.className = "bb-menu-topics";
+
+        const label = document.createElement("div");
+        label.className = "bb-menu-topics-label";
+        label.textContent = "Topics";
+        topics.appendChild(label);
+
+        for (const b of activeTopics) {
+          const row = document.createElement("div");
+          row.className = "bb-menu-topic-row";
+
+          const info = document.createElement("div");
+          info.className = "bb-menu-topic-info";
+
+          const name = document.createElement("span");
+          name.className = "bb-menu-topic-name";
+          if (b.interested) name.classList.add("bb-interested");
+          name.textContent = b.category;
+          info.appendChild(name);
+
+          if (b.reasons && b.reasons.length > 0) {
+            const reason = document.createElement("span");
+            reason.className = "bb-menu-topic-reason";
+            reason.textContent = b.reasons[0];
+            info.appendChild(reason);
+          }
+
+          row.appendChild(info);
+
+          // Heart toggle
+          const heart = document.createElement("button");
+          heart.className = "bb-menu-topic-heart";
+          if (b.interested || state.interestedCategories.has(b.id)) {
+            heart.classList.add("bb-interested");
+          }
+          heart.textContent = "\u2661";
+          heart.setAttribute("aria-label", "Toggle interest in " + b.category);
+          heart.addEventListener("click", (e) => {
+            e.stopPropagation();
+            doToggleInterest(b.id);
+            heart.classList.toggle("bb-interested");
+            name.classList.toggle("bb-interested");
+          });
+          row.appendChild(heart);
+
+          topics.appendChild(row);
+        }
+
+        menu.appendChild(topics);
+      }
+    }
+
+    // ── Divider ──
+    const divider = document.createElement("div");
+    divider.className = "bb-menu-divider";
+    menu.appendChild(divider);
+
+    // ── Action items ──
+    const normalized = data.handle ? data.handle.toLowerCase() : null;
+    const isKnownBro = normalized && state.knownBros.has(normalized);
+    const isTrusted = normalized && state.trustedUsers.has(normalized);
+
+    if (normalized && !isTrusted) {
+      const broBtn = document.createElement("button");
+      broBtn.className = "bb-menu-item bb-menu-item-bro";
+      const broLabel = document.createElement("span");
+      broLabel.className = "bb-menu-item-label";
+      broLabel.textContent = isKnownBro ? "Unmark as Bro" : "Mark as Bro";
+      broBtn.appendChild(broLabel);
+      const broDesc = document.createElement("span");
+      broDesc.className = "bb-menu-item-desc";
+      broDesc.textContent = isKnownBro ? "Remove from blocklist" : "Always frost this user\u2019s tweets";
+      broBtn.appendChild(broDesc);
+      broBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dismissMenu();
+        if (isKnownBro) {
+          doUnblacklist(data.handle);
+        } else {
+          doBlacklist(data.handle, data._article);
+        }
+      });
+      menu.appendChild(broBtn);
+    }
+
+    if (normalized && !isKnownBro) {
+      const trustBtn = document.createElement("button");
+      trustBtn.className = "bb-menu-item bb-menu-item-trust";
+      const trustLabel = document.createElement("span");
+      trustLabel.className = "bb-menu-item-label";
+      trustLabel.textContent = isTrusted ? "Untrust @" + data.handle : "Trust @" + data.handle;
+      trustBtn.appendChild(trustLabel);
+      const trustDesc = document.createElement("span");
+      trustDesc.className = "bb-menu-item-desc";
+      trustDesc.textContent = isTrusted ? "Resume scoring this user" : "Never hide tweets from this user";
+      trustBtn.appendChild(trustDesc);
+      trustBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dismissMenu();
+        if (isTrusted) {
+          doUntrust(data.handle);
+        } else {
+          doWhitelist(data.handle, state);
+        }
+      });
+      menu.appendChild(trustBtn);
+    }
+
+    frag.appendChild(menu);
+    return { frag, menu };
+  }
+
+  function showMenu(pill) {
+    const data = _pillData.get(pill);
+    if (!data) return;
+
+    // Don't re-open for same pill
+    if (_menuActivePill === pill && _menuRoot && _menuRoot.querySelector(".bb-menu")) {
+      cancelMenuHide();
+      return;
+    }
+
+    dismissMenu();
+    ensureMenuHost();
+
+    const { frag, menu } = buildMenu(data);
+
+    // Position near pill
+    const rect = pill.getBoundingClientRect();
+    const menuW = 260; // approximate width (min 220, max 300)
+    let left = Math.max(8, Math.min(rect.left, window.innerWidth - menuW - 8));
+    let top = rect.bottom + 6;
+
+    // If below viewport, flip above pill
+    if (top + 300 > window.innerHeight) {
+      top = Math.max(8, rect.top - 300 - 6);
+    }
+
+    menu.style.top = top + "px";
+    menu.style.left = left + "px";
+
+    _menuRoot.appendChild(frag);
+    _menuActivePill = pill;
+  }
+
+  function dismissMenu() {
+    cancelMenuHide();
+    if (_menuRoot) {
+      while (_menuRoot.firstChild) {
+        // Keep the <style> element
+        if (_menuRoot.firstChild.tagName === "STYLE") {
+          if (_menuRoot.firstChild.nextSibling) {
+            _menuRoot.removeChild(_menuRoot.firstChild.nextSibling);
+          } else {
+            break;
+          }
+        } else {
+          _menuRoot.removeChild(_menuRoot.firstChild);
+        }
+      }
+    }
+    _menuActivePill = null;
+  }
+
+  function scheduleMenuHide() {
+    cancelMenuHide();
+    _menuHideTimer = setTimeout(dismissMenu, 200);
+  }
+
+  function cancelMenuHide() {
+    if (_menuHideTimer) {
+      clearTimeout(_menuHideTimer);
+      _menuHideTimer = null;
+    }
+  }
+
+  function attachMenuHover(pill) {
+    pill.addEventListener("mouseenter", () => {
+      cancelMenuHide();
+      showMenu(pill);
+    });
+    pill.addEventListener("mouseleave", () => {
+      scheduleMenuHide();
+    });
   }
 
   /**
@@ -484,5 +756,5 @@ const BroBlockUI = (() => {
     }
   }
 
-  return { init, renderFrost, renderPill, updateFrostMeta };
+  return { init, renderFrost, renderPill, updateFrostMeta, dismissMenu };
 })();
