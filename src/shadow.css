@@ -33,12 +33,9 @@
   animation: bb-tab-in 250ms ease-out;
 }
 
-/* Severity accent on frost tab */
-.bb-frost-tab[data-severity="low"] { border-left-color: var(--bb-green); }
-.bb-frost-tab[data-severity="moderate"] { border-left-color: var(--bb-amber); }
-.bb-frost-tab[data-severity="high"] { border-left-color: var(--bb-red); }
-.bb-frost-tab[data-severity="extreme"] { border-left-color: var(--bb-red-strong); }
-.bb-frost-tab[data-severity="knownBro"] { border-left-color: var(--bb-red); }
+/* Binary accent on frost tab */
+.bb-frost-tab[data-state="clean"] { border-left-color: var(--bb-green); }
+.bb-frost-tab[data-state="bro"]   { border-left-color: var(--bb-red); }
 
 @keyframes bb-tab-in {
   from { opacity: 0; transform: translateY(-4px); }
@@ -73,42 +70,36 @@
 .bb-floating-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
   padding: 3px 10px;
   border-radius: 9999px;
   font-family: var(--bb-font);
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  background: var(--bb-fp-bg);
-  border: 1px solid var(--bb-fp-border);
-  color: var(--bb-fp-text);
+  font-weight: 700;
   pointer-events: auto;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  user-select: none;
+  transition: opacity 0.12s ease;
 }
 
 .bb-floating-pill:hover {
-  background: var(--bb-fp-hover-bg);
+  opacity: 0.8;
 }
 
-.bb-floating-pill-label {
-  font-weight: 400;
-  opacity: 0.4;
-  font-size: 12px;
+.bb-floating-pill:focus-visible {
+  outline: 2px solid var(--bb-amber);
+  outline-offset: 1px;
 }
 
-.bb-floating-pill-score {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
+/* Binary state: green = clean, red = known bro */
+.bb-floating-pill[data-state="clean"] {
+  background: rgba(92, 184, 112, 0.25);
+  color: var(--bb-green);
 }
-
-.bb-floating-pill[data-severity="low"] .bb-floating-pill-score { color: var(--bb-green); }
-.bb-floating-pill[data-severity="moderate"] .bb-floating-pill-score { color: var(--bb-amber); }
-.bb-floating-pill[data-severity="high"] .bb-floating-pill-score { color: var(--bb-red); }
-.bb-floating-pill[data-severity="extreme"] .bb-floating-pill-score { color: var(--bb-red-strong); }
-.bb-floating-pill[data-severity="knownBro"] .bb-floating-pill-score { color: var(--bb-red); }
+.bb-floating-pill[data-state="bro"] {
+  background: rgba(212, 90, 90, 0.25);
+  color: var(--bb-red);
+}
 
 /* ── Menu ── */
 

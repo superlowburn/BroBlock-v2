@@ -23,6 +23,7 @@ const BroDetector = (() => {
   const BREADTH_BASE = 7;            // Additive breadth bonus: BREADTH_BASE * ln(n)
   const LONG_TEXT_THRESHOLD = 400;   // Chars above which length deflation kicks in
   const LONG_TEXT_FLOOR = 0.85;      // Max deflation for very long texts (15% reduction)
+  const BIO_CAP = 20;               // Max points bio can contribute
 
   // Pre-compiled dampener patterns — analytical/critical language
   // indicates the person is discussing/critiquing rather than promoting
@@ -49,12 +50,16 @@ const BroDetector = (() => {
   /**
    * Score a tweet's text content.
    * @param {string} text - Tweet text
-   * @param {{ hasBlueCheck?: boolean, displayName?: string }} [signals]
-   * @returns {{ score: number, categories: string[], reasons: string[], breakdown: Array<{category: string, points: number, rawPoints: number, reasons: string[]}>, adjustments: number }}
+   * @param {{ hasBlueCheck?: boolean, displayName?: string, bio?: string, followers?: number, following?: number }} [signals]
+   * @returns {{ score: number, categories: string[], reasons: string[], breakdown: Array, adjustments: number, bioScore: number, bioBreakdown: Array }}
    */
   function score(text, signals) {
     if (!text || typeof text !== "string") {
-      return { score: 0, categories: [], reasons: [], breakdown: [] };
+      // Even with no text, account signals may contribute
+      if (signals && (signals.bio || typeof signals.followers === "number")) {
+        return scoreAccountOnly(signals);
+      }
+      return { score: 0, categories: [], reasons: [], breakdown: [], adjustments: 0, bioScore: 0, bioBreakdown: [] };
     }
 
     let total = 0;
@@ -116,7 +121,21 @@ const BroDetector = (() => {
       total += dampenerAdj;
     }
 
-    // 5. Profile signals (only amplify existing text signal)
+    // 4.5 Account-level signals (additive — can push zero-text tweets above 0)
+    let bioAdj = 0;
+    let ratioAdj = 0;
+    let bioResult = { bioScore: 0, bioBreakdown: [], bioReasons: [] };
+    if (signals) {
+      if (signals.bio) {
+        bioResult = scoreBio(signals.bio);
+        bioAdj = bioResult.bioScore;
+        total += bioAdj;
+      }
+      ratioAdj = scoreFollowerRatio(signals.followers, signals.following);
+      total += ratioAdj;
+    }
+
+    // 5. Profile signals (only amplify existing signal — bio can unlock this)
     let signalAdj = 0;
     if (total > 0 && signals) {
       if (signals.hasBlueCheck) signalAdj += 5;
@@ -140,7 +159,115 @@ const BroDetector = (() => {
       reasons,
       breakdown,
       adjustments: dampenerAdj + signalAdj,
+      bioScore: bioResult.bioScore,
+      bioBreakdown: bioResult.bioBreakdown,
     };
+  }
+
+  /**
+   * Score when there's no tweet text but account signals exist.
+   * Bio + follower ratio + profile signals only.
+   */
+  function scoreAccountOnly(signals) {
+    let total = 0;
+    let bioResult = { bioScore: 0, bioBreakdown: [], bioReasons: [] };
+
+    if (signals.bio) {
+      bioResult = scoreBio(signals.bio);
+      total += bioResult.bioScore;
+    }
+    total += scoreFollowerRatio(signals.followers, signals.following);
+
+    // Profile signals (only if bio/ratio gave us something)
+    let signalAdj = 0;
+    if (total > 0) {
+      if (signals.hasBlueCheck) signalAdj += 5;
+      if (signals.displayName) signalAdj += scoreName(signals.displayName);
+      total += signalAdj;
+    }
+
+    return {
+      score: Math.min(Math.max(total, 0), BB.SCORE_MAX),
+      categories: [],
+      reasons: bioResult.bioReasons.slice(0, 3),
+      breakdown: [],
+      adjustments: signalAdj,
+      bioScore: bioResult.bioScore,
+      bioBreakdown: bioResult.bioBreakdown,
+    };
+  }
+
+  /**
+   * Score a bio/description for bro signals.
+   * Reuses the same compiled patterns as tweet scoring.
+   * @param {string} bio
+   * @returns {{ bioScore: number, bioBreakdown: Array, bioReasons: string[] }}
+   */
+  function scoreBio(bio) {
+    if (!bio || typeof bio !== "string") {
+      return { bioScore: 0, bioBreakdown: [], bioReasons: [] };
+    }
+
+    let total = 0;
+    const breakdown = [];
+
+    for (const cat of compiled) {
+      let catPoints = 0;
+      const catReasons = [];
+
+      for (const { test, weight, reason } of cat.tests) {
+        if (test.test(bio)) {
+          catPoints += weight;
+          catReasons.push(reason);
+        }
+      }
+
+      // Reset lastIndex for global/sticky regexes (safety)
+      for (const { test } of cat.tests) {
+        test.lastIndex = 0;
+      }
+
+      if (catPoints > 0) {
+        const effectivePoints = Math.round(CAT_CAP * Math.tanh(catPoints / CAT_CAP));
+        breakdown.push({
+          id: cat.id,
+          category: cat.label,
+          points: effectivePoints,
+          rawPoints: catPoints,
+          reasons: catReasons,
+        });
+        total += effectivePoints;
+      }
+    }
+
+    // Hard cap: bio contributes at most BIO_CAP points
+    const capped = Math.min(total, BIO_CAP);
+    const bioReasons = breakdown
+      .flatMap((b) => b.reasons.map((r) => "Bio: " + r))
+      .slice(0, 3);
+
+    return { bioScore: capped, bioBreakdown: breakdown, bioReasons };
+  }
+
+  /**
+   * Score follower/following ratio for suspicious patterns.
+   * Very subtle — max 3 points.
+   * @param {number} [followers]
+   * @param {number} [following]
+   * @returns {number} 0-7
+   */
+  function scoreFollowerRatio(followers, following) {
+    if (typeof followers !== "number" || typeof following !== "number") return 0;
+    if (followers === 0 && following === 0) return 0;
+    // Ratio-based: follow-for-follow farming regardless of account size
+    if (following > 0) {
+      const ratio = following / Math.max(followers, 1);
+      if (ratio >= 3 && following >= 500) return 7;    // following 3× more than follow you
+      if (ratio >= 1.5 && following >= 1000) return 4; // following 50%+ more at scale
+    }
+    // Legacy absolute: tiny account aggressively following
+    if (followers < 200 && following > 1000) return 4;
+    return 0;
   }
 
   /**
@@ -158,5 +285,5 @@ const BroDetector = (() => {
     return Math.min(s, 15);
   }
 
-  return { score, scoreName };
+  return { score, scoreName, scoreBio };
 })();

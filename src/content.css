@@ -20,12 +20,7 @@
   --bb-gray: #888;
 
   /* Inline pill backgrounds */
-  --bb-pill-bg-none: rgba(128, 128, 128, 0.15);
-  --bb-pill-bg-low: rgba(92, 184, 112, 0.18);
-  --bb-pill-bg-moderate: rgba(212, 160, 74, 0.18);
-  --bb-pill-bg-high: rgba(212, 90, 90, 0.18);
-  --bb-pill-bg-extreme: rgba(196, 60, 60, 0.22);
-  --bb-pill-bg-trusted: rgba(92, 184, 112, 0.18);
+  --bb-pill-bg-clean: rgba(92, 184, 112, 0.18);
   --bb-pill-bg-bro: rgba(212, 90, 90, 0.18);
 
   /* Shadow DOM tokens — cascade through shadow boundaries */
@@ -62,12 +57,7 @@
   --bb-red-strong: #a02020;
   --bb-gray: #999;
 
-  --bb-pill-bg-none: rgba(128, 128, 128, 0.10);
-  --bb-pill-bg-low: rgba(46, 139, 71, 0.10);
-  --bb-pill-bg-moderate: rgba(184, 134, 45, 0.10);
-  --bb-pill-bg-high: rgba(194, 56, 56, 0.10);
-  --bb-pill-bg-extreme: rgba(160, 32, 32, 0.12);
-  --bb-pill-bg-trusted: rgba(46, 139, 71, 0.10);
+  --bb-pill-bg-clean: rgba(46, 139, 71, 0.10);
   --bb-pill-bg-bro: rgba(194, 56, 56, 0.10);
 
   --bb-tab-bg: rgba(255, 255, 255, 0.96);
@@ -129,12 +119,11 @@ article.bb-frosted {
   align-items: center !important;
   width: fit-content !important;
   margin-left: 6px !important;
-  padding: 2px 7px !important;
+  padding: 2px 8px !important;
   border-radius: 9999px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  font-variant-numeric: tabular-nums !important;
   line-height: 18px !important;
   cursor: pointer !important;
   pointer-events: auto !important;
@@ -142,87 +131,32 @@ article.bb-frosted {
   border: none !important;
   transition: opacity 0.15s ease !important;
   text-decoration: none !important;
+  user-select: none !important;
 }
 
 .bb-pill:hover {
   opacity: 0.7 !important;
 }
 
-/* Zero scores: green like low — not a bro */
-.bb-pill[data-severity="none"] {
-  color: var(--bb-green) !important;
-  background: var(--bb-pill-bg-low) !important;
+.bb-pill:focus-visible {
+  outline: 2px solid var(--bb-amber) !important;
+  outline-offset: 1px !important;
 }
 
-.bb-pill[data-severity="low"] {
+/* Binary state: green = clean, red = known bro */
+.bb-pill[data-state="clean"] {
   color: var(--bb-green) !important;
-  background: var(--bb-pill-bg-low) !important;
+  background: var(--bb-pill-bg-clean) !important;
 }
-.bb-pill[data-severity="moderate"] {
-  color: var(--bb-amber) !important;
-  background: var(--bb-pill-bg-moderate) !important;
-}
-.bb-pill[data-severity="high"] {
-  color: var(--bb-red) !important;
-  background: var(--bb-pill-bg-high) !important;
-}
-.bb-pill[data-severity="extreme"] {
-  color: var(--bb-red-strong) !important;
-  background: var(--bb-pill-bg-extreme) !important;
-}
-.bb-pill[data-severity="trusted"] {
-  color: var(--bb-green) !important;
-  background: var(--bb-pill-bg-trusted) !important;
-}
-.bb-pill[data-severity="knownBro"] {
+.bb-pill[data-state="bro"] {
   color: var(--bb-red) !important;
   background: var(--bb-pill-bg-bro) !important;
 }
-
-/* ── Pill Label ── */
-.bb-pill-label {
-  pointer-events: none !important;
-}
-
-/* ── Pill Toggle Switch ── */
-.bb-pill-toggle {
-  position: relative !important;
-  display: inline-block !important;
-  width: 24px !important;
-  height: 14px !important;
-  margin-left: 5px !important;
-  border-radius: 7px !important;
-  background: var(--bb-gray) !important;
-  cursor: pointer !important;
-  vertical-align: middle !important;
-  flex-shrink: 0 !important;
-  transition: background 0.2s ease !important;
-  border: none !important;
-  outline: none !important;
-}
-
-.bb-pill-toggle:focus-visible {
-  box-shadow: 0 0 0 2px var(--bb-amber) !important;
-}
-
-.bb-pill-toggle-knob {
-  position: absolute !important;
-  top: 2px !important;
-  left: 2px !important;
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
-  background: #fff !important;
-  transition: transform 0.2s ease !important;
-  pointer-events: none !important;
-}
-
-.bb-pill-toggle[aria-checked="true"] {
-  background: var(--bb-red) !important;
-}
-
-.bb-pill-toggle[aria-checked="true"] .bb-pill-toggle-knob {
-  transform: translateX(10px) !important;
+.bb-pill[data-state="trusted"] {
+  color: var(--bb-green) !important;
+  background: var(--bb-pill-bg-clean) !important;
+  opacity: 0.6 !important;
+  cursor: default !important;
 }
 
 /* ── Undo Toast ── */

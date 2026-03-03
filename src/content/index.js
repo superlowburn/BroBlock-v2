@@ -13,7 +13,7 @@
     knownBros: new Set(),
     trustedUsers: new Set(),
     interestedCategories: new Set(),
-    userCache: new Map(), // handle_lowercase -> { followers, following }
+    userCache: new Map(), // handle_lowercase -> { followers, following, bio }
     shadowCSS: null,
   };
 

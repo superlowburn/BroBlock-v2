@@ -25,7 +25,13 @@ node --check src/onboarding.js
 node -e "JSON.parse(require('fs').readFileSync('manifest.json', 'utf8')); console.log('manifest.json OK')"
 ```
 
-To test, load unpacked in `chrome://extensions/` and navigate to x.com.
+Run scoring engine tests (zero dependencies, uses `node:test`):
+
+```bash
+node --test test/scoring.test.js
+```
+
+To test the full extension, load unpacked in `chrome://extensions/` and navigate to x.com.
 
 ## Architecture
 

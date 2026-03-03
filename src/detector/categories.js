@@ -203,6 +203,35 @@ const BroCategories = (() => {
       ],
     },
 
+    // ── 9. Hype Machine ──
+    {
+      id: "hypeMachine",
+      label: "Hype Machine",
+      patterns: [
+        // Unsolicited follow recommendations
+        { regex: /go follow @\w+/i, weight: 15, reason: "unsolicited follow recommendation" },
+        { regex: /if you.?re not following\s+@\w+/i, weight: 16, reason: "FOMO follow recommendation" },
+        { regex: /everyone should (be )?following @\w+/i, weight: 14, reason: "mass follow solicitation for others" },
+        { regex: /you (need to|should|must|have to) follow @\w+/i, weight: 14, reason: "imperative follow recommendation" },
+        { regex: /why (aren.?t|are) you (not )?following @\w+/i, weight: 13, reason: "guilting follow recommendation" },
+        // Third-party MRR/metric congratulations (praise for others, not personal claims)
+        { regex: /congrats (on|to)\s+@\w+.{0,40}(MRR|ARR|revenue|first customer|first sale)/i, weight: 12, reason: "third-party metric congratulation" },
+        { regex: /@\w+\s+(just|recently)?\s*(hit|reached|crossed|unlocked)\s+.{0,20}(MRR|ARR)/i, weight: 11, reason: "third-party MRR milestone hype" },
+        { regex: /congrats (on|to|@\w+).{0,50}(MRR|ARR)/i, weight: 10, reason: "MRR congratulation" },
+        // Empty community solidarity performance
+        { regex: /this community is (incredible|amazing|the best|so supportive|unreal)/i, weight: 8, reason: "empty community solidarity" },
+        { regex: /grateful to be (building|creating|doing this) alongside/i, weight: 7, reason: "performative community gratitude" },
+        { regex: /love (this community|what you.?re building|to see (this|it))/i, weight: 6, reason: "vague community hype" },
+        // "This is what X looks like" performative framing
+        { regex: /this is what (consistency|hard work|dedication|the grind|building in public) looks like/i, weight: 9, reason: "performative progress framing" },
+        // "This guy" hype
+        { regex: /\bthis guy\b.{0,60}(follow|fire|real deal|know|gets? it|crushing|killing|legend|ship|build|grow)/i, weight: 15, reason: "\"this guy\" hype authority" },
+        { regex: /\bthis guy\b/i, weight: 5, reason: "\"this guy\" hype ambient" },
+        // BREAKING: fake urgency bro announcement
+        { regex: /^BREAKING[\s:!]/m, weight: 14, reason: "fake-urgency BREAKING hype" },
+      ],
+    },
+
     // ── 10. Fake Vulnerability ──
     {
       id: "fakeVulnerability",

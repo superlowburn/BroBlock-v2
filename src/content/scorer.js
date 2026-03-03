@@ -52,8 +52,13 @@ const BroBlockScorer = (() => {
       return;
     }
 
-    // Score-based detection
+    // Score-based detection — merge DOM signals with API-intercepted account data
     const signals = BroBlockExtractor.extractSignals(article);
+    if (userMeta) {
+      signals.bio = userMeta.bio || "";
+      signals.followers = userMeta.followers;
+      signals.following = userMeta.following;
+    }
     const raw = BroDetector.score(text, signals);
 
     // Apply interest filter (zero out points for topics user is interested in)
@@ -110,6 +115,11 @@ const BroBlockScorer = (() => {
       total += result.adjustments;
     }
 
+    // Bio contribution is not subject to interest filtering (it's about the account)
+    if (result.bioScore) {
+      total += result.bioScore;
+    }
+
     // Only include reasons from non-interested categories
     const reasons = adjusted
       .filter((b) => !b.interested)
@@ -122,6 +132,8 @@ const BroBlockScorer = (() => {
       reasons,
       breakdown: adjusted,
       adjustments: result.adjustments,
+      bioScore: result.bioScore || 0,
+      bioBreakdown: result.bioBreakdown || [],
     };
   }
 
