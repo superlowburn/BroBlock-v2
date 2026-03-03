@@ -65,44 +65,72 @@
   flex: 1;
 }
 
-/* ── Floating Pill ── */
+/* ── Floating Pill Toggle ── */
 
 .bb-floating-pill {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
   border-radius: 9999px;
   font-family: var(--bb-font);
   font-size: 13px;
   font-weight: 700;
   pointer-events: auto;
-  cursor: pointer;
   flex-shrink: 0;
   user-select: none;
-  transition: opacity 0.12s ease;
+  overflow: hidden;
+  border: 1px solid var(--bb-fp-border);
 }
 
-.bb-floating-pill:focus-visible {
+.bb-fp-seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 9px;
+  cursor: pointer;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+  border: none;
+  outline: none;
+  line-height: 18px;
+}
+
+.bb-fp-seg:focus-visible {
   outline: 2px solid var(--bb-amber);
-  outline-offset: 1px;
+  outline-offset: -1px;
 }
 
-/* Clean: ghost outline — action affordance, not a badge */
-.bb-floating-pill[data-state="clean"] {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--bb-green);
+/* Clean: green active, bro dimmed */
+.bb-floating-pill[data-state="clean"] .bb-fp-seg-ok {
+  background: rgba(92, 184, 112, 0.2);
   color: var(--bb-green);
-  opacity: 0.5;
+  opacity: 0.85;
 }
-.bb-floating-pill[data-state="clean"]:hover {
+.bb-floating-pill[data-state="clean"]:hover .bb-fp-seg-ok {
   opacity: 1;
 }
+.bb-floating-pill[data-state="clean"] .bb-fp-seg-bro {
+  background: transparent;
+  color: var(--bb-red);
+  opacity: 0.5;
+}
+.bb-floating-pill[data-state="clean"] .bb-fp-seg-bro:hover {
+  opacity: 1;
+  background: rgba(212, 90, 90, 0.2);
+}
 
-/* Bro: solid filled badge — confirmed manual status */
-.bb-floating-pill[data-state="bro"] {
+/* Bro: bro active, green dimmed */
+.bb-floating-pill[data-state="bro"] .bb-fp-seg-bro {
   background: rgba(212, 90, 90, 0.25);
   color: var(--bb-red);
   opacity: 1;
+}
+.bb-floating-pill[data-state="bro"] .bb-fp-seg-ok {
+  background: transparent;
+  color: var(--bb-green);
+  opacity: 0.5;
+}
+.bb-floating-pill[data-state="bro"] .bb-fp-seg-ok:hover {
+  opacity: 1;
+  background: rgba(92, 184, 112, 0.2);
 }
 
 /* ── Menu ── */

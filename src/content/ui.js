@@ -96,41 +96,58 @@ const BroBlockUI = (() => {
       tab.appendChild(meta);
     }
 
-    // Floating pill (right) — simple Bro toggle
+    // Floating pill (right) — two-segment toggle
     const pill = document.createElement("div");
     pill.className = "bb-floating-pill";
     pill.dataset.state = isKnownBro ? "bro" : "clean";
-    pill.setAttribute("role", "button");
-    pill.setAttribute("tabindex", "0");
-    pill.setAttribute(
-      "aria-label",
-      isKnownBro ? "Marked as bro \u2014 click to unmark" : "Mark as bro"
-    );
-    // "Bro" only when confirmed; ghost dot when untagged (action, not status)
-    pill.textContent = isKnownBro ? "Bro" : "\u00b7";
+    pill.setAttribute("role", "group");
+    pill.setAttribute("aria-label", "Bro toggle");
 
     const tooltip = buildTooltip(data.score, data.userMeta);
     if (tooltip) pill.title = tooltip;
 
-    const toggle = () => {
-      if (!normalized) return;
-      if (state.knownBros.has(normalized)) {
-        doUnblacklist(data.handle);
-      } else {
-        doBlacklist(data.handle, data._article);
-      }
-    };
-    pill.addEventListener("click", (e) => {
+    // Left segment: green / OK
+    const segOk = document.createElement("span");
+    segOk.className = "bb-fp-seg bb-fp-seg-ok";
+    segOk.textContent = "\u2713";
+    segOk.setAttribute("role", "button");
+    segOk.setAttribute("tabindex", "0");
+    segOk.setAttribute("aria-pressed", String(!isKnownBro));
+    segOk.setAttribute("aria-label", isKnownBro ? "Unmark as bro" : "Not a bro");
+
+    // Right segment: Bro
+    const segBro = document.createElement("span");
+    segBro.className = "bb-fp-seg bb-fp-seg-bro";
+    segBro.textContent = "Bro";
+    segBro.setAttribute("role", "button");
+    segBro.setAttribute("tabindex", "0");
+    segBro.setAttribute("aria-pressed", String(isKnownBro));
+    segBro.setAttribute("aria-label", isKnownBro ? "Marked as bro" : "Mark as bro");
+
+    pill.appendChild(segOk);
+    pill.appendChild(segBro);
+
+    // Click handlers
+    const onOkClick = (e) => {
       e.stopPropagation();
       e.preventDefault();
-      toggle();
+      if (!normalized) return;
+      if (state.knownBros.has(normalized)) doUnblacklist(data.handle);
+    };
+    segOk.addEventListener("click", onOkClick);
+    segOk.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onOkClick(e); }
     });
-    pill.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        toggle();
-      }
+
+    const onBroClick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (!normalized) return;
+      if (!state.knownBros.has(normalized)) doBlacklist(data.handle, data._article);
+    };
+    segBro.addEventListener("click", onBroClick);
+    segBro.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onBroClick(e); }
     });
 
     tab.appendChild(pill);
@@ -153,42 +170,56 @@ const BroBlockUI = (() => {
     // Store article ref for actions
     data._article = article;
 
+    // Container
     const pill = document.createElement("span");
     pill.className = "bb-pill";
-    pill.setAttribute("role", "button");
-    pill.setAttribute("tabindex", "0");
-    pill.setAttribute(
-      "aria-label",
-      isKnownBro ? "Marked as bro \u2014 click to unmark" : "Mark as bro"
-    );
-    // "Bro" only when confirmed; ghost dot when untagged (action, not status)
-    pill.textContent = isKnownBro ? "Bro" : "\u00b7";
-
-    // Binary state → color
+    pill.setAttribute("role", "group");
+    pill.setAttribute("aria-label", "Bro toggle");
     pill.dataset.state = isKnownBro ? "bro" : isTrusted ? "trusted" : "clean";
 
-    // Tooltip: score + follower counts
+    // Tooltip on container
     const tooltip = buildTooltip(data.score, data.userMeta);
     if (tooltip) pill.title = tooltip;
 
-    // One-click toggle (no action for trusted users)
+    // Left segment: green / OK
+    const segOk = document.createElement("span");
+    segOk.className = "bb-pill-seg bb-pill-seg-ok";
+    segOk.textContent = "\u2713";
+    segOk.setAttribute("role", "button");
+    segOk.setAttribute("tabindex", "0");
+    segOk.setAttribute("aria-pressed", String(!isKnownBro));
+    segOk.setAttribute("aria-label", isKnownBro ? "Unmark as bro" : "Not a bro");
+
+    // Right segment: Bro
+    const segBro = document.createElement("span");
+    segBro.className = "bb-pill-seg bb-pill-seg-bro";
+    segBro.textContent = "Bro";
+    segBro.setAttribute("role", "button");
+    segBro.setAttribute("tabindex", isTrusted ? "-1" : "0");
+    segBro.setAttribute("aria-pressed", String(isKnownBro));
+    segBro.setAttribute("aria-label", isKnownBro ? "Marked as bro" : "Mark as bro");
+
+    pill.appendChild(segOk);
+    pill.appendChild(segBro);
+
+    // Click handlers (no action for trusted users)
     if (!isTrusted && normalized) {
-      const toggle = () => {
-        if (state.knownBros.has(normalized)) {
-          doUnblacklist(handle);
-        } else {
-          doBlacklist(handle, article);
-        }
-      };
-      pill.addEventListener("click", (e) => {
+      const onOkClick = (e) => {
         e.stopPropagation();
-        toggle();
+        if (state.knownBros.has(normalized)) doUnblacklist(handle);
+      };
+      segOk.addEventListener("click", onOkClick);
+      segOk.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onOkClick(e); }
       });
-      pill.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggle();
-        }
+
+      const onBroClick = (e) => {
+        e.stopPropagation();
+        if (!state.knownBros.has(normalized)) doBlacklist(handle, article);
+      };
+      segBro.addEventListener("click", onBroClick);
+      segBro.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onBroClick(e); }
       });
     }
 
