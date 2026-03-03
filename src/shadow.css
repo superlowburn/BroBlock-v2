@@ -37,6 +37,12 @@
 .bb-frost-tab[data-state="clean"] { border-left-color: var(--bb-green); }
 .bb-frost-tab[data-state="bro"]   { border-left-color: var(--bb-red); }
 
+/* Collapsed known-bro tab — card feel */
+.bb-frost-tab[data-collapsed="true"] {
+  border-radius: 0 12px 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 @keyframes bb-tab-in {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }

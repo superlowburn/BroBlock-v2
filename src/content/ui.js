@@ -54,6 +54,9 @@ const BroBlockUI = (() => {
 
   function renderFrost(article, data, s) {
     article.classList.add("bb-frosted");
+    if (data.state === "knownBro") {
+      article.classList.add("bb-collapsed");
+    }
 
     data.isFrosted = true;
     data._article = article;
@@ -86,6 +89,7 @@ const BroBlockUI = (() => {
     const tab = document.createElement("div");
     tab.className = "bb-frost-tab";
     tab.dataset.state = isKnownBro ? "bro" : "clean";
+    if (data.state === "knownBro") tab.dataset.collapsed = "true";
 
     // Handle (left)
     const handleEl = document.createElement("span");
@@ -166,29 +170,25 @@ const BroBlockUI = (() => {
   }
 
   // ═══════════════════════════════════════
-  // INLINE PILL (non-frosted tweets)
+  // SHARED PILL BUILDER
   // ═══════════════════════════════════════
 
-  function renderPill(article, data) {
-    // Remove existing pill
-    article.querySelector(".bb-pill")?.remove();
-
+  /**
+   * Build a pill element with segments and click handlers.
+   * Used by both renderPill() (inline, on tweets) and renderProfilePill() (profile header).
+   */
+  function buildPillElement(data, articleOrNull) {
     const handle = data.handle;
     const normalized = handle ? handle.toLowerCase() : null;
     const isKnownBro = normalized && state.knownBros.has(normalized);
     const isTrusted  = normalized && state.trustedUsers.has(normalized);
 
-    // Store article ref for actions
-    data._article = article;
-
-    // Container
     const pill = document.createElement("span");
     pill.className = "bb-pill";
     pill.setAttribute("role", "group");
     pill.setAttribute("aria-label", "Bro toggle");
     pill.dataset.state = isKnownBro ? "bro" : isTrusted ? "trusted" : "clean";
 
-    // Tooltip on container
     const tooltip = buildTooltip(data.score, data.userMeta);
     if (tooltip) pill.title = tooltip;
 
@@ -226,7 +226,7 @@ const BroBlockUI = (() => {
 
       const onBroClick = (e) => {
         e.stopPropagation();
-        if (!state.knownBros.has(normalized)) doBlacklist(handle, article);
+        if (!state.knownBros.has(normalized)) doBlacklist(handle, articleOrNull);
       };
       segBro.addEventListener("click", onBroClick);
       segBro.addEventListener("keydown", (e) => {
@@ -237,6 +237,22 @@ const BroBlockUI = (() => {
     // Store data + attach hover menu
     _pillData.set(pill, data);
     attachMenuHover(pill);
+
+    return pill;
+  }
+
+  // ═══════════════════════════════════════
+  // INLINE PILL (non-frosted tweets)
+  // ═══════════════════════════════════════
+
+  function renderPill(article, data) {
+    // Remove existing pill
+    article.querySelector(".bb-pill")?.remove();
+
+    // Store article ref for actions
+    data._article = article;
+
+    const pill = buildPillElement(data, article);
 
     // Insert after timestamp anchor
     const anchor = BroBlockExtractor.findTimestampAnchor(article);
@@ -255,6 +271,45 @@ const BroBlockUI = (() => {
         article.setAttribute("data-bb-pill-retries", String(retries + 1));
         article.removeAttribute("data-bb-scored");
       }
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // PROFILE PILL (account holder page)
+  // ═══════════════════════════════════════
+
+  function renderProfilePill(userNameEl, data) {
+    userNameEl.querySelector(".bb-pill")?.remove();
+
+    data._article = null; // No article context for profile pills
+
+    const pill = buildPillElement(data, null);
+
+    // Find the @handle row — insert pill next to it so it reads "@handle [✓|Bro]"
+    // Strategy 1: link whose text starts with @
+    let handleContainer = null;
+    const handleLinks = userNameEl.querySelectorAll('a[href^="/"]');
+    for (const link of handleLinks) {
+      if (link.textContent.trim().startsWith("@")) {
+        handleContainer = link.parentElement;
+        break;
+      }
+    }
+    // Strategy 2: leaf span containing @ text
+    if (!handleContainer) {
+      const spans = userNameEl.querySelectorAll("span");
+      for (const span of spans) {
+        if (span.textContent.trim().startsWith("@") && span.children.length === 0) {
+          handleContainer = span.parentElement;
+          break;
+        }
+      }
+    }
+
+    if (handleContainer) {
+      handleContainer.appendChild(pill);
+    } else {
+      userNameEl.appendChild(pill); // fallback
     }
   }
 
@@ -756,5 +811,5 @@ const BroBlockUI = (() => {
     }
   }
 
-  return { init, renderFrost, renderPill, updateFrostMeta, dismissMenu };
+  return { init, renderFrost, renderPill, renderProfilePill, updateFrostMeta, dismissMenu };
 })();

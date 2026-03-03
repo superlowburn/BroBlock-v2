@@ -17,6 +17,7 @@ const BroBlockCleanup = (() => {
       for (const el of article.querySelectorAll(sel)) el.remove();
     }
     article.classList.remove("bb-frosted");
+    article.classList.remove("bb-collapsed");
     article.removeAttribute("data-bb-scored");
     article.removeAttribute("data-bb-peeked");
     article.removeAttribute("data-bb-pill-retries");
@@ -28,6 +29,13 @@ const BroBlockCleanup = (() => {
     const articles = document.querySelectorAll("[data-bb-scored]");
     for (const article of articles) {
       cleanArticle(article);
+    }
+    // Clean profile pills
+    const profileScored = document.querySelectorAll("[data-bb-profile-scored]");
+    for (const el of profileScored) {
+      const pill = el.querySelector(".bb-pill");
+      if (pill) pill.remove();
+      el.removeAttribute("data-bb-profile-scored");
     }
     // Remove singleton menu host
     const menuHost = document.getElementById("bb-menu-host");

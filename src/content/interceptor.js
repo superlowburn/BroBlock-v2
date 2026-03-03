@@ -71,6 +71,7 @@
           followers: leg.followers_count,
           following: leg.friends_count || 0,
           bio: typeof leg.description === "string" ? leg.description : "",
+          viewerFollows: leg.following === true,
         },
       ]);
     }

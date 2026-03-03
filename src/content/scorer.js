@@ -7,9 +7,30 @@
 /* eslint-disable no-unused-vars */
 const BroBlockScorer = (() => {
 
+  /** Detect tweet detail/thread pages (/{handle}/status/{id}). */
+  function isDetailPage() {
+    return /^\/[^/]+\/status\/\d+/.test(window.location.pathname);
+  }
+
+  /** Check if an article is the main tweet on a detail page (not a reply). */
+  function isMainTweet(article) {
+    const timeLink = article.querySelector('a[href*="/status/"]');
+    if (timeLink) {
+      const href = timeLink.getAttribute("href");
+      if (href && window.location.pathname.startsWith(href)) return true;
+    }
+    return false;
+  }
+
   function processArticle(article, state) {
     // Skip already-scored articles
     if (article.hasAttribute("data-bb-scored")) return;
+
+    // On tweet detail pages, only process the main tweet — skip replies
+    if (isDetailPage() && !isMainTweet(article)) {
+      article.setAttribute("data-bb-scored", "1");
+      return;
+    }
 
     // Extract tweet text — if empty, check if article is fully loaded
     const text = BroBlockExtractor.extractText(article);
@@ -63,7 +84,7 @@ const BroBlockScorer = (() => {
 
     // Apply interest filter (zero out points for topics user is interested in)
     const result = applyInterests(raw, state.interestedCategories);
-    const isFrosted = result.score >= state.threshold;
+    const isFrosted = result.score >= state.threshold && !userMeta?.viewerFollows;
 
     const data = {
       score: result.score,
@@ -137,5 +158,51 @@ const BroBlockScorer = (() => {
     };
   }
 
-  return { processArticle };
+  /**
+   * Process a profile page header — inject pill for the account holder.
+   * No text scoring; just list-based (knownBros/trustedUsers) with a pill toggle.
+   */
+  function processProfileHeader(root, state) {
+    const userNameEl = root.querySelector
+      ? root.querySelector('[data-testid="UserName"]')
+      : null;
+    if (!userNameEl) return;
+    if (userNameEl.hasAttribute("data-bb-profile-scored")) return;
+    if (userNameEl.querySelector(".bb-pill")) return;
+
+    userNameEl.setAttribute("data-bb-profile-scored", "1");
+
+    // Extract handle from profile header
+    let handle = null;
+    const handleLink = userNameEl.querySelector('a[href^="/"]');
+    if (handleLink) {
+      const match = handleLink.getAttribute("href").match(/^\/([A-Za-z0-9_]{1,15})$/);
+      if (match) handle = match[1];
+    }
+    if (!handle) {
+      const text = userNameEl.textContent || "";
+      const atMatch = text.match(/@([A-Za-z0-9_]{1,15})/);
+      if (atMatch) handle = atMatch[1];
+    }
+    if (!handle) return;
+
+    const normalized = handle.toLowerCase();
+    const userMeta = state.userCache.get(normalized) || null;
+    const isKnownBro = state.knownBros.has(normalized);
+    const isTrusted = state.trustedUsers.has(normalized);
+
+    const data = {
+      score: 0,
+      handle: handle,
+      state: isKnownBro ? "knownBro" : isTrusted ? "trusted" : "clean",
+      reasons: isKnownBro ? ["Manually flagged as bro"] : [],
+      categories: [],
+      breakdown: [],
+      userMeta: userMeta,
+    };
+
+    BroBlockUI.renderProfilePill(userNameEl, data);
+  }
+
+  return { processArticle, processProfileHeader };
 })();

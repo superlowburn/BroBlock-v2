@@ -64,6 +64,8 @@ const BroBlockObserver = (() => {
       for (const article of unscored) {
         BroBlockScorer.processArticle(article, state);
       }
+      // Sweep for profile headers too (SPA navigation may add new profiles)
+      BroBlockScorer.processProfileHeader(document.body, state);
     }, SWEEP_MS);
   }
 
@@ -89,6 +91,9 @@ const BroBlockObserver = (() => {
     for (const article of articles) {
       BroBlockScorer.processArticle(article, state);
     }
+
+    // Process profile headers (pill on account holder pages)
+    BroBlockScorer.processProfileHeader(root, state);
   }
 
   function stop() {
